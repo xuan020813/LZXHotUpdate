@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:engine="UnityEngine.UIElements"
+        xmlns:editor="UnityEditor.UIElements" xmlns="http://www.w3.org/2001/XMLSchema"
+        xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+        xsi:schemaLocation="http://www.w3.org/2001/XMLSchema file:/D:/Unity/UnityPro/LZX/UIElementsSchema/http:/www.w3.org/2001/XMLSchema.xsd">
+    <engine:VisualElement class="window" name="root">
+        <engine:VisualElement class="root" name="dropdown">
+            <engine:DropdownField name="rule-dropdown" label="规则" choices="日期,分组,None" index="0" />
+        </engine:VisualElement>
+        <engine:VisualElement class="containter" name="containter"/>
+    </engine:VisualElement>
+</engine:UXML>

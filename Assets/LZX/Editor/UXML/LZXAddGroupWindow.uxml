@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+>
+    <engine:VisualElement class="window" name="AddWindow">
+        <engine:VisualElement class="root" name="Name">
+            <engine:Label text="Name:" />
+            <engine:TextField name="txf_name" />
+        </engine:VisualElement>
+        <engine:VisualElement class="root" name="Plat">
+            <engine:Label text="平台:" />
+            <engine:Toggle name="tgl_win" text="Win" />
+            <engine:Toggle name="tgl_mac" text="Switch" />
+            <engine:Toggle name="tgl_ios" text="IOS" />
+            <engine:Toggle name="tgl_android" text="Android" />
+        </engine:VisualElement>
+        <engine:VisualElement class="root" name="Group">
+            <engine:Label text="分组:" />
+            <engine:VisualElement class="togglecontainer" name="dpdn_group"/>
+            <engine:Button name="btn_addgroup" text="+" />
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>

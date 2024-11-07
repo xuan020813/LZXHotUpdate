@@ -1,0 +1,17 @@
+.idea/*
+Library/*
+Logs/*
+obj/*
+ProjectSettings/*
+Temp/*
+UserSettings/*
+*.vsconfig
+*.csproj
+*.sln
+.vs/*
+.idea/*
+Assets/Bundles
+MemoryCaptures/*
+UIElementsSchema/*
+*.assets
+Assets/LZX/Bundles/*

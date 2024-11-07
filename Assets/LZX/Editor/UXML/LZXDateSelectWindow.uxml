@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns="UnityEngine.UIElements">
+    <ui:VisualElement class="root" name="root">
+        <ui:VisualElement class="root" name="content">
+            <ui:DropdownField name="dropdown"/>
+            <ui:Label name="label_year" text="年"/>
+        </ui:VisualElement>
+        <ui:VisualElement class="root" name="content">
+            <ui:Button text="＜" name="btn_rise"/>
+            <ui:Label name="label_month"/>
+            <ui:Button text="＞" name="btn_add"/>
+        </ui:VisualElement>
+        <ui:VisualElement class="root" name="daycontainter"/>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
+    <engine:VisualElement class="InfoItem">
+            <engine:VisualElement class="BG box" name="BG"/>
+            <engine:Label class="Name box" label="newgroup" name="label_name"/>
+            <engine:VisualElement class="BG box OnHide" name="Warning"/>
+            <engine:Button class="btn_box" name="btn_build"/>
+            <engine:Button class="btn_box" name="btn_remove"/>
+            <engine:Button class="btn_box" name="btn_expansion"/>
+    </engine:VisualElement>
+</engine:UXML>

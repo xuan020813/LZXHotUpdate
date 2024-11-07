@@ -1,0 +1,43 @@
+.content{
+    width: 100%;
+    height: 25px;
+    flex-direction: row;
+}
+Label{
+    font-size: 16px;
+    width: 30%;
+    height: 100%;
+    -unity-text-align: middle-right;
+}
+TextField{
+    flex: 1;
+    font-size: 16px;
+    height: 100%;
+    -unity-font-style: bold-and-italic;
+}
+ScrollView{
+    padding: 1px;
+    margin: 1px;
+    width: 100%;
+    height: 40%;
+}
+Toggle{
+    margin: 1px;
+    font-size: 16px;
+    width: 98%;
+    height: 20px;
+    -unity-text-align: middle-left;
+    flex-direction: row-reverse;
+}
+.drop{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+#dropdown_compress{
+    height: 100%;
+    width: 90%;
+}
+#labe_options{
+    -unity-text-align: upper-right;
+}

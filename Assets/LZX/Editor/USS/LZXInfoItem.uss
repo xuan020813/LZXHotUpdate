@@ -1,0 +1,55 @@
+/* styles.uss */
+.BG{
+    background-color: dimgray;
+    color: black;
+    width: 20px;
+    height: 100%;
+}
+Button{
+    background-color: darkgray;
+    width: 20px;
+    height: 100%;
+}
+Button:hover{
+    background-color: aliceblue;
+}
+#label_name{
+    background-color: dimgray;
+    -unity-text-align: middle-left;
+    color: black;
+    width: auto;
+    height: 100%;
+    flex-grow: 1;/* 占据剩余空间 */
+}
+#label_name:hover{
+    background-color: darkgray;
+}
+.OnHide{
+    display: none;
+}
+.box{/*边框*/
+    padding: 0px;
+    margin: 1px;
+}
+.btn_box{
+    padding: 0;
+    margin-left: 0.5px;
+    margin-right: 0.5px;
+    margin-bottom: 0;
+    margin-top: 0;
+    
+}
+.InfoItem{
+    margin-bottom: 1px;
+    width: auto;
+    height: 20px;
+    display: flex;
+    flex-direction: row;/* 水平排列 */
+    /*align-items: center; 垂直居中 */
+    justify-content: flex-start;/* 左对齐 */
+    /*justify-content: flex-end; 右对齐 */
+    /*justify-content: center; 水平居中 */
+    /*align-items: flex-start; 顶部对齐 */
+    /*align-items: flex-end; 底部对齐 */
+    /*align-items: center; 垂直居中 */
+}

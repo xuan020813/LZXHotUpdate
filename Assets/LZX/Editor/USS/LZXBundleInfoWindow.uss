@@ -1,0 +1,75 @@
+#root{
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    justify-content: flex-start;/* 左对齐 */
+    height: 100%;
+    min-height: 600px;
+    width: 100%;
+    min-width: 100px;
+}
+#leftroot{
+    width: 70%;
+    height: auto;
+}
+#btnroot{
+    background-color: darkgray;
+    max-height: 30px;
+    flex-direction: row;
+    justify-content: flex-start;/* 左对齐 */
+    margin-bottom: 1px;
+}
+#litemroot{
+    max-height: 80%;
+}
+#ritemroot{
+    max-height: 100%;
+}
+#inforoot{
+    flex-direction: column-reverse;
+    width: 100%;
+    min-height: 10%;
+    max-height: 30%;
+}
+#rightroot{
+    width: 30%;
+    height: auto;
+    min-width: 30%;
+}
+#labelroot{
+    display: flex; /* 使用 Flexbox */
+    flex-wrap: wrap; /* 允许换行 */
+    width: 100%;
+}
+.root
+{
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    margin-right: 1px;
+}
+.label
+{
+    background-color: darkgray; /* 标签背景色 */
+    color: black;
+    -unity-text-align: middle-left;
+    width: 50%; /* 每个标签占据50%宽度，减去间距 */
+    height: 24%;
+    margin-right: 1px; /* 标签间距 */
+    margin-top: 1px;
+}
+Button{
+    width: 80px;
+    height: 28px;
+    padding: 1px;
+    margin: 1px;
+}
+TextField{
+    display: flex;
+    flex-grow: 1;
+}
+#cutting_line{
+    background-color: black;
+    width: 1px;
+    height: 100%;
+}

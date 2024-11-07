@@ -1,0 +1,21 @@
+TextField {
+    width: 70%;
+    height: 30px;
+}
+Button{
+    position: absolute;
+    bottom: -50px;
+    left: 1px;
+    width: 70px;
+    height: 30px;
+}
+Label{
+    width: 40px;
+    height: 30px;
+    -unity-text-align: middle-left;
+}
+#input{
+    display: flex;
+    flex-direction: row;/* 水平排列 */
+    /*align-items: center; 垂直居中 */
+}

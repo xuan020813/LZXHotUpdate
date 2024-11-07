@@ -1,0 +1,40 @@
+Button {
+    width: 20px;
+    height: 20px;
+    background-color: #000000;
+}
+Label{
+    font-size: 14px;
+    -unity-text-align: middle-left;
+    color: #FFFFFF;
+    width: 60px;
+}
+.window{
+    display: flex;
+    flex: 1;
+    flex-grow: 1;
+}
+.root{
+    display: flex;
+    flex-direction: row;/* 水平排列 */
+    align-items: center;/* 垂直居中 */
+    justify-content: flex-start;/* 左对齐 */
+}
+TextField{
+    width: 81%;
+    height: 20px;
+}
+.togglecontainer{
+    width: 75%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+}
+#Plat{
+    height: 20px;
+}
+#Group{
+    flex-grow: 1;
+    height: auto;
+    align-items: flex-start;
+}

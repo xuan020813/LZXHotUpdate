@@ -1,0 +1,23 @@
+#messagebox{
+    background-color: dimgrey;
+    width: 90%;
+    min-height: 50px;
+    margin: 5% auto;
+    border-radius: 10px;
+    color: white;
+    font-size: 18px;
+    -unity-text-align: middle-center;
+}
+Button{
+    height: 60%;
+    width: 30%;
+    margin: 0;
+    margin-right: 9%;
+    margin-left: 9%;
+}
+.content{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}

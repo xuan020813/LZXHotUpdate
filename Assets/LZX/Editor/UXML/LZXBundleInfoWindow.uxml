@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
+    <engine:VisualElement name="root">
+        <engine:VisualElement class="root" name="leftroot">
+            <engine:VisualElement class="root" name="btnroot">
+                <engine:Button class="button" name="btn_addgroup" text="添加" />
+                <engine:Button class="button" name="btn_select" text="筛选" />
+                <engine:Button class="button" name="btn" text="生成清单文件" />
+                <engine:Button class="button" name="btn" text="打包" />
+                <engine:TextField class="textfeild" name="textfield" />
+            </engine:VisualElement>
+            <engine:ScrollView class="root" name="litemroot" />
+            <engine:VisualElement class="root" name="inforoot">
+                <!-- <engine:VisualElement class="root" name="btnroot"> -->
+                <!--     <engine:Button class="button" name="btn" text="打包" /> -->
+                <!--     <engine:Button class="button" name="btn" text="重命名" /> -->
+                <!--     <engine:Button class="button" name="btn" text="重选分组" /> -->
+                <!-- </engine:VisualElement> -->
+                <engine:VisualElement class="root" name="labelroot">
+                    <engine:Label class="label" name="label_name" text="Info" />
+                    <engine:Label class="label" name="label_group" text="Info" />
+                    <engine:Label class="label" name="label_createdate" text="Info" />
+                    <engine:Label class="label" name="label_platform" text="Info" />
+                    <engine:Label class="label" name="label_isbuild" text="Info" />
+                    <engine:Label class="label" name="label_guid" text="Info" />
+                    <engine:Label class="label" name="label_assetcount" text="Info" />
+                    <engine:Label class="label" name="label_dependience" text="Info" />
+                </engine:VisualElement>
+            </engine:VisualElement>    
+        </engine:VisualElement>
+        <engine:VisualElement class="cutting" name="cutting_line"/>
+        <engine:VisualElement class="root" name="rightroot">
+            <engine:VisualElement class="root" name="btnroot">
+                <engine:TextField class="textfeild" name="textfield" />
+                <engine:Button class="button" name="btn" text="清空" />
+            </engine:VisualElement>
+            <engine:ScrollView class="root" name="ritemroot" />
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>
