@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd"
+>
+    <engine:VisualElement class="root">
+        <engine:Label text="Build Target:" />
+        <engine:Toggle name="togl_win" text="Win" />
+        <engine:Toggle name="togl_ios" text="iOS" />
+        <engine:Toggle name="togl_android" text="Android" />
+        <engine:Toggle name="togl_switch" text="Switch" />
+        <engine:Toggle name="togl_followbundle" text="Follow Bundle" />
+    </engine:VisualElement>
+    <engine:TextField name="txt_output" label="Output Path" />
+    <engine:Toggle name="togl_clearfloder" text="Clear Floder" />
+    <engine:Toggle name="togl_copytostreamingassets" text="Copy to StreamingAssets" />
+    <engine:DropdownField name="dropdown_compression" label="Compression" choices="None(LZMA),ChunkBased(LZ4),UnCompressed"/>
+    <engine:Toggle name="togl_excludetypeinfomataion" text="Exclude Type Infomataion" />
+    <engine:Toggle name="togl_forcerebuild" text="Force Rebuild" />
+    <engine:Toggle name="togl_ignoretypetreechanges" text="Ignore Type Tree Changes"/>
+    <engine:Toggle name="togl_appendhash" text="Append Hash" />
+    <engine:Toggle name="togl_strictmode" text="Strict Mode" />
+    <engine:Toggle name="togl_dryrunbuild" text="Dry Run Build" />
+    <engine:Toggle name="togl_useversioncontrol" text="Use Version Control" />
+    <engine:Button name="btn_build" text="Build" />
+</engine:UXML>

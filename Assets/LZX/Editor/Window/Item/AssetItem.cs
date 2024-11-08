@@ -17,7 +17,7 @@ namespace LZX.MEditor.Window.Item
         public AssetItem(Asset asset,VisualElement root)
         {
             Name = root.Q<Label>("label_name");
-            Name.text = asset.name;
+            Name.text = asset.Name;
             var btn_delete = root.Q<Button>("btn_expansion");
             btn_delete.clicked += () => { OnDeleteClick();};
             btn_delete.style.backgroundImage = LZXEditorResources.GetIcon(LZXIconType.delete);

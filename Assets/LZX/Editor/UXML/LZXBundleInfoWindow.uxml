@@ -7,10 +7,19 @@
     <engine:VisualElement name="root">
         <engine:VisualElement class="root" name="leftroot">
             <engine:VisualElement class="root" name="btnroot">
+                <engine:Button class="button" name="btn_multiselect" text="多选" />
                 <engine:Button class="button" name="btn_addgroup" text="添加" />
                 <engine:Button class="button" name="btn_select" text="筛选" />
                 <engine:Button class="button" name="btn" text="生成清单文件" />
-                <engine:Button class="button" name="btn" text="打包" />
+                <engine:Button class="button" name="btn_buildAll" text="打包" />
+                <engine:TextField class="textfeild" name="textfield" />
+            </engine:VisualElement>
+            <engine:VisualElement class="onhid" name="multiselectroot">
+                <engine:Button class="button" name="btn_cancel" text="取消多选" />
+                <engine:Button class="button" name="btn_allselect" text="全选" />
+                <engine:Button class="button" name="btn_inverse" text="反选" />
+                <engine:Button class="button" name="btn_buildselect" text="打包所选" />
+                <engine:Button class="button" name="btn_deleteselect" text="删除所选" />
                 <engine:TextField class="textfeild" name="textfield" />
             </engine:VisualElement>
             <engine:ScrollView class="root" name="litemroot" />

@@ -32,6 +32,18 @@ namespace LZX.MEditor.Tool
                 AssetDatabase.CreateAsset(versionController, VersionControllerPath);
             }
             
+            string BuildOptionsPath = Path.Combine(path,"BuildOptions.asset");
+            if (!File.Exists(BuildOptionsPath))
+            {
+                MScriptableObject.BuildOptions buildOptions = ScriptableObject.CreateInstance<MScriptableObject.BuildOptions>();
+                buildOptions.Compression = 0;
+                AssetDatabase.CreateAsset(buildOptions, BuildOptionsPath);
+            }
+
+            // string DefaultOutput = Path.Combine(Application.dataPath, "LZX/Bundles/Output");
+            // if (!Directory.Exists(DefaultOutput))
+            //     Directory.CreateDirectory(DefaultOutput);
+            
             var settingwindow = EditorWindow.GetWindow<SettingWindow>();
             settingwindow.minSize = new Vector2(480, 180);
             settingwindow.loadingName.style.display = DisplayStyle.None;

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8eb6dbefa5e73c14784f2aad49bb1c69, type: 3}
+  m_Name: BuildOptions
+  m_EditorClassIdentifier: 
+  buildTargets: 13000000
+  FollowBundle: 0
+  outputPath: D:/Unity/UnityPro/LZX/Assets/LZX/Bundles/Output
+  ClearFloder: 1
+  CopyTOStreamingAssets: 1
+  ExcludeTypeInformation: 0
+  ForceRebuild: 0
+  IgnoreTypeTreeChanges: 0
+  AppendHash: 0
+  StrictMode: 0
+  DryRunBuild: 0
+  UseVersionControl: 1
+  compression: 0
+  compressionType: 0

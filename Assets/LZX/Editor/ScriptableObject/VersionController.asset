@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66f9b47c2dce94a47a5bbb683a8ef69e, type: 3}
   m_Name: VersionController
   m_EditorClassIdentifier: 
-  Version: 0000000000000000000000000000000000000000
-  _bundles: []
+  Version: 0000000000000000000000000000000001000000
+  _bundles:
+  - Key: 77c358d5183d9174fb163f461173c846
+    Value: {fileID: 11400000, guid: f081447651c9a7f47aebd175d41b2ae3, type: 2}

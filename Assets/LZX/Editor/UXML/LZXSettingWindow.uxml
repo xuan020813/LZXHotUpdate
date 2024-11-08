@@ -10,10 +10,10 @@
             <engine:Label text="资源URL：" class="label" name="labe_resurl" />
             <engine:TextField class="textfield" name="txtf_resurl" />
         </engine:VisualElement>
-        <engine:VisualElement class="content" name="">
-            <engine:Label text="Bundle输出路径：" class="label" name="labe_bundleoutpath" />
-            <engine:TextField class="textfield" name="txtf_bundleoutpath" />
-        </engine:VisualElement>
+        <!-- <engine:VisualElement class="content" name=""> -->
+        <!--     <engine:Label text="Bundle输出路径：" class="label" name="labe_bundleoutpath" /> -->
+        <!--     <engine:TextField class="textfield" name="txtf_bundleoutpath" /> -->
+        <!-- </engine:VisualElement> -->
         <engine:VisualElement class="content" name="">
             <engine:Label text="Bunedle后缀：" class="label" name="labe_bundlefileex" />
             <engine:TextField class="textfield" name="txtf_bundlefileex" />

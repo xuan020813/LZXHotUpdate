@@ -35,6 +35,14 @@ namespace LZX.MEditor.Window
         #endregion
         
         public Bundle curSelectBundle;
+
+        private VisualElement btnroot;
+        private VisualElement multiselectroot;
+        private bool IsMultiSelect;
+        private Button btn_allselect;
+        private bool IsAllSelect;
+        private List<Toggle> BG_toggles = new List<Toggle>();
+        private HashSet<Bundle> selectBundles = new HashSet<Bundle>();
         
         [MenuItem("LZX/Show")]
         public static void ShowWindow()
@@ -53,6 +61,10 @@ namespace LZX.MEditor.Window
             AssetRoot.RegisterCallback<DragUpdatedEvent>(OnDragUpdated);
             AssetRoot.RegisterCallback<DragLeaveEvent>(OnDragLeave);
             AssetRoot.RegisterCallback<DragPerformEvent>(OnDragPerform);
+            
+            btnroot = container.Q<VisualElement>("btnroot");
+            multiselectroot = container.Q<VisualElement>("multiselectroot");
+            
             #region Label
             label_group = container.Q<Label>("label_group");
             label_dependience = container.Q<Label>("label_dependience");
@@ -67,6 +79,23 @@ namespace LZX.MEditor.Window
             btn_addgroup.clicked += () => { AddBundle(); };
             var btn_select = container.Q<Button>("btn_select");
             btn_select.clicked += () => { OnSelectClick(); };
+            var btn_buildAll = container.Q<Button>("btn_buildAll");
+            btn_buildAll.clicked += () => { OnBuildAllClick(); };
+            var btn_multiselect = container.Q<Button>("btn_multiselect");
+            btn_multiselect.clicked += () => { OnMultiSelectClick(); };
+
+            #region 多选Button
+            var btn_cancel = container.Q<Button>("btn_cancel");
+            btn_cancel.clicked += () => { OnMultiSelectClick(); };
+            btn_allselect = container.Q<Button>("btn_allselect");
+            btn_allselect.clicked += () => { OnAllSelectClick(); };
+            var btn_inverse = container.Q<Button>("btn_inverse");
+            btn_inverse.clicked += () => { OnInvertSelectClick(); };
+            var btn_buildselect = container.Q<Button>("btn_buildselect");
+            btn_buildselect.clicked += () => { OnBuildSelectClick(); };
+            var btn_deleteselect = container.Q<Button>("btn_deleteselect");
+            btn_deleteselect.clicked += () => { OnDeleteSelectClick(); };
+            #endregion
             root.Add(container);
             RefreshBundle();
         }
@@ -114,7 +143,7 @@ namespace LZX.MEditor.Window
         {
             if (IsDir(absolutePath))
             {
-                Debug.Log("拖拽文件夹");
+                //Debug.Log("拖拽文件夹");
                 string[] files = Directory.GetFiles(absolutePath);
                 for (int i = 0; i < files.Length; i++)
                 {
@@ -146,6 +175,8 @@ namespace LZX.MEditor.Window
         {
             BundleRoot.Clear();
             List<Bundle> bundles = GetBundles();
+            BG_toggles.Clear();
+            selectBundles.Clear();
             int count = 0;
             foreach (var bundle in bundles)
             {
@@ -153,12 +184,21 @@ namespace LZX.MEditor.Window
                 var itemroot = item.CloneTree();
                 itemroot.styleSheets.Add(itemuss);
                 BundleItem bundleItem = new BundleItem(bundle,itemroot);
-                Label label = new Label(count.ToString());
                 var labelroot = itemroot.Q<VisualElement>("BG");
+                //if (!IsMultiSelect)
+                //{
+                Label label = new Label(count.ToString());
                 labelroot.Add(label);
+                //}
+                // else
+                // {
+                //     Toggle toggle = new Toggle();
+                //     toggle.RegisterValueChangedCallback((evt) => { OnSelectToggleValueChanged(bundle, toggle.value); });
+                //     labelroot.Add(toggle);
+                //     BG_toggles.Add(toggle);
+                // }
                 InitButton(itemroot, bundle);
                 BundleRoot.Add(itemroot);
-                
             }
         }
         private void InitButton(TemplateContainer itemroot, Bundle bundle)
@@ -194,13 +234,13 @@ namespace LZX.MEditor.Window
         public void RefreshAsset(Bundle bundle)
         {
             AssetRoot.Clear();
-            string dir = Path.Combine(Application.dataPath, "LZX/Bundles/" + bundle.name);
-            var files = Directory.GetFiles(dir);
-            foreach (var file in files)
+            // string dir = Path.Combine(Application.dataPath, "LZX/Bundles/" + bundle.name);
+            // var files = Directory.GetFiles(dir);
+            foreach (var GUID in bundle.AssetGUIDs)
             {
-                if (file.EndsWith(".meta"))
-                    continue;
-                var asset = AssetDatabase.LoadAssetAtPath<Asset>(file.Replace(Application.dataPath, "Assets"));
+                // if (file.EndsWith(".meta"))
+                //     continue;
+                var asset = new Asset(GUID);
                 var itemroot = item.CloneTree();
                 itemroot.styleSheets.Add(itemuss);
                 AssetItem assetItem = new AssetItem(asset,itemroot);
@@ -224,13 +264,13 @@ namespace LZX.MEditor.Window
             }
             label_isbuild.text = "是否已构建：" + bundle.IsBuild;
             label_guid.text = "GUID：" + bundle.GUID;
-            label_assetcount.text = "资源数量：" + bundle.AssetCount;
+            label_assetcount.text = "资源数量：" + bundle.AssetGUIDs.Count;
             label_name.text = "名称：" + bundle.name;
             //TODO:dependience添加
         }
         public void RefreshLabel(Asset asset)
         {
-            label_group.text = "Size(Bytes):" + asset.Size;
+            label_group.text = "Size:" + asset.Size;
             label_createdate.text = "TODO...";
             label_platform.text = "TODO...";
             label_isbuild.text = "LoadPath：" + asset.LoadPath;
@@ -315,7 +355,90 @@ namespace LZX.MEditor.Window
         {
             List<Bundle> bundles = new List<Bundle>();
             bundles.Add(bundle);
-            LZXEditorResources.BuildBundle(bundles);
+            BuidlOptionsWindow window = GetWindow<BuidlOptionsWindow>();
+            window.minSize = new Vector2(600, 370);
+            window.bundles = bundles;
+            window.togl_clearfloder.style.display = DisplayStyle.None;
+            //BuildAll无需赋值
+        }
+        private void OnBuildAllClick()
+        {
+            List<Bundle> bundles = GetBundles();
+            BuidlOptionsWindow window = GetWindow<BuidlOptionsWindow>();
+            window.minSize = new Vector2(600, 370);
+            window.bundles = bundles;
+            window.BuildAll = true;
+        }
+        private void OnMultiSelectClick()
+        {
+            IsMultiSelect = !IsMultiSelect;
+            btnroot.style.display = IsMultiSelect ? DisplayStyle.None : DisplayStyle.Flex;
+            multiselectroot.style.display = IsMultiSelect ? DisplayStyle.Flex : DisplayStyle.None;
+            var items = BundleRoot.Children();
+            int count = 0;
+            foreach (var item in items)
+            {
+                if (item is TemplateContainer container)
+                {
+                    count++;
+                    var labelroot = container.Q<VisualElement>("BG");
+                    labelroot.Clear();
+                    if (IsMultiSelect)
+                    {
+                        Toggle toggle = new Toggle();
+                        toggle.RegisterValueChangedCallback((evt) => { OnSelectToggleValueChanged(container.Q<Label>("label_name").text, toggle.value); });
+                        labelroot.Add(toggle);
+                        BG_toggles.Add(toggle);
+                    }
+                    else
+                    {
+                        Label label = new Label(count.ToString());
+                        labelroot.Add(label);
+                    }
+                }
+            }
+        }
+        private void OnSelectToggleValueChanged(string bundleName,bool value)
+        {
+            var bundle = LZXEditorResources.GetBundleWithBundleName(bundleName);
+            if(bundle == null)
+                throw new Exception("Bundle不存在");
+            if(value)
+                selectBundles.Add(bundle);
+            else
+                selectBundles.Remove(bundle);
+        }
+        private void OnDeleteSelectClick()
+        {
+            for (int i = selectBundles.Count - 1; i >= 0; i--)
+            {
+                var bundle = selectBundles.ElementAt(i);
+                selectBundles.Remove(bundle);
+                DeleteBundle(bundle);
+            }
+        }
+        private void OnBuildSelectClick()
+        {
+            BuidlOptionsWindow window = GetWindow<BuidlOptionsWindow>();
+            window.minSize = new Vector2(600, 370);
+            window.bundles = selectBundles.ToList();
+            window.togl_clearfloder.style.display = DisplayStyle.None;
+        }
+        private void OnInvertSelectClick()
+        {
+            foreach (var toggle in BG_toggles)
+            {
+                toggle.value = !toggle.value;
+            }
+        }
+        private void OnAllSelectClick()
+        {
+            IsAllSelect = !IsAllSelect;
+            btn_allselect.text = IsAllSelect ? "全不选" : "全选";
+            foreach (var toggle in BG_toggles)
+            {
+                toggle.value = IsAllSelect;
+            }
         }
         #endregion
         private void AddBundle()
@@ -358,7 +481,7 @@ namespace LZX.MEditor.Window
             var version = LZXEditorResources.GetVersionController();
             version.Add(bundle.GUID,bundle);
             AssetDatabase.SaveAssets();
-            Directory.CreateDirectory(Path.Combine(Application.dataPath, "LZX/Bundles/" + bundle.Name));
+            // Directory.CreateDirectory(Path.Combine(Application.dataPath, "LZX/Bundles/" + bundle.Name));
             AssetDatabase.Refresh();
             RefreshBundle();
             window.Close();
@@ -421,19 +544,23 @@ namespace LZX.MEditor.Window
         }
         private void AddAsset(string assetPath)
         {
-            curSelectBundle.AssetCount++;
-            string path = "Assets/LZX/Bundles/" + curSelectBundle.Name;
-            Debug.Log(path);
-            if(!Directory.Exists(path.Replace("Assets", Application.dataPath)))
-                throw new Exception("Bundle不存在");
-            Asset asset = ScriptableObject.CreateInstance<Asset>();
-            asset.Name = Path.GetFileNameWithoutExtension(assetPath);
-            asset.GUID = AssetDatabase.AssetPathToGUID(assetPath);
-            asset.LoadPath = assetPath;
-            asset.Size = new FileInfo(assetPath).Length.ToString("f2");
-            asset.Dependences = LZXEditorResources.GetDependencies(assetPath).ToArray();
-            AssetDatabase.CreateAsset(asset,$"{path}/{asset.Name}.asset");
-            AssetDatabase.Refresh();
+            if(!curSelectBundle.AssetGUIDs.Contains(AssetDatabase.AssetPathToGUID(assetPath)))
+                curSelectBundle.AssetGUIDs.Add(AssetDatabase.AssetPathToGUID(assetPath));
+            EditorUtility.SetDirty(curSelectBundle);
+            AssetDatabase.SaveAssets();
+            #region 弃用
+            // string path = "Assets/LZX/Bundles/" + curSelectBundle.Name;
+            // if(!Directory.Exists(path.Replace("Assets", Application.dataPath)))
+            //     throw new Exception("Bundle不存在");
+            // Asset asset = ScriptableObject.CreateInstance<Asset>();
+            // asset.Name = Path.GetFileNameWithoutExtension(assetPath);
+            // asset.GUID = AssetDatabase.AssetPathToGUID(assetPath);
+            // asset.LoadPath = assetPath;
+            // asset.Size = new FileInfo(assetPath).Length.ToString("f2");//TODO:获取某个文件的大小
+            // asset.Dependences = LZXEditorResources.GetDependencies(assetPath).ToArray();
+            //AssetDatabase.CreateAsset(asset,$"{path}/{asset.Name}.asset");
+            //AssetDatabase.Refresh();
+            #endregion
             RefreshAsset(curSelectBundle);
         }
         private List<Bundle> GetBundles()

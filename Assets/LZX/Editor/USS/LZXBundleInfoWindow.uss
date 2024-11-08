@@ -19,6 +19,13 @@
     justify-content: flex-start;/* 左对齐 */
     margin-bottom: 1px;
 }
+#multiselectroot{
+    background-color: darkgray;
+    max-height: 30px;
+    flex-direction: row;
+    justify-content: flex-start;/* 左对齐 */
+    margin-bottom: 1px;
+}
 #litemroot{
     max-height: 80%;
 }
@@ -72,4 +79,7 @@ TextField{
     background-color: black;
     width: 1px;
     height: 100%;
+}
+.onhid{
+    display: none;
 }

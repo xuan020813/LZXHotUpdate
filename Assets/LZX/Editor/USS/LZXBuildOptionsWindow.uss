@@ -1,0 +1,57 @@
+/* 根容器样式 */
+.root {
+    padding: 10px;
+    background-color: #333333;
+    color: #ffffff;
+    flex-direction: row;
+}
+
+/* 标题标签样式 */
+.root > Label {
+    font-size: 14px;
+    color: #cccccc;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #555555;
+}
+
+/* Toggle 的样式 */
+.root > Toggle {
+    margin: 5px 0;
+    padding-left: 15px;
+    color: #dddddd;
+    font-size: 12px;
+}
+
+/* TextField 的样式 */
+TextField {
+    margin: 10px 0;
+    color: #cccccc;
+    background-color: #444444;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 3px;
+}
+
+/* DropdownField 的样式 */
+DropdownField {
+    margin: 10px 0;
+    background-color: #444444;
+    color: #ffffff;
+    font-size: 12px;
+    padding: 4px;
+}
+
+/* Button 的样式 */
+Button {
+    background-color: #555555;
+    color: #ffffff;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 3px;
+    margin-top: 15px;
+    -unity-text-align: middle-center;
+}
+
+Button:hover {
+    background-color: #666666;
+}

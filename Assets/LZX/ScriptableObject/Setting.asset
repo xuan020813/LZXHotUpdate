@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Setting
   m_EditorClassIdentifier: 
   ResourcesURL: D:/Hub/RES
-  BundleOutPath: D:/Unity/UnityPro/LZX/Assets/MBundles
+  BundleOutPath: 
   BundleEx: .ab
   LoadingBundleName: 
   LoadingBundlePath: 

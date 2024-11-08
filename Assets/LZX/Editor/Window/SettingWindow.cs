@@ -21,7 +21,7 @@ namespace LZX.MEditor.Window
             window.minSize = new Vector2(480, 180);
         }
         private TextField txtf_resurl;
-        private TextField txtf_bundleoutpath;
+        // private TextField txtf_bundleoutpath;
         private TextField txtf_bundlefileex;
         private TextField txtf_loadingbundlename;
         private TextField txtf_loadingbundlepath;
@@ -42,8 +42,8 @@ namespace LZX.MEditor.Window
             txtf_bundlefileex = root.Q<TextField>("txtf_bundlefileex");
             txtf_resurl =  root.Q<TextField>("txtf_resurl");
             txtf_resurl.RegisterCallback<ClickEvent>(OnPathTextFieldClick);
-            txtf_bundleoutpath = root.Q<TextField>("txtf_bundleoutpath");
-            txtf_bundleoutpath.RegisterCallback<ClickEvent>(OnPathTextFieldClick);
+            // txtf_bundleoutpath = root.Q<TextField>("txtf_bundleoutpath");
+            // txtf_bundleoutpath.RegisterCallback<ClickEvent>(OnPathTextFieldClick);
             txtf_loadingbundlename = root.Q<TextField>("txtf_loadingbundlename");
             txtf_loadingbundlename.RegisterCallback<ClickEvent>(OnFileTextFieldClick);
             txtf_loadingbundlepath = root.Q<TextField>("txtf_loadingbundlepath");
@@ -96,7 +96,7 @@ namespace LZX.MEditor.Window
             if(setting == null)
                 return;
             txtf_resurl.value = setting.ResourcesURL;
-            txtf_bundleoutpath.value = setting.BundleOutPath;
+            // txtf_bundleoutpath.value = setting.BundleOutPath;
             txtf_bundlefileex.value = setting.BundleEx;
             txtf_loadingbundlename.value = setting.LoadingBundleName;
             txtf_loadingbundlepath.value = setting.LoadingBundlePath;
@@ -107,8 +107,8 @@ namespace LZX.MEditor.Window
         {
             if(string.IsNullOrEmpty(txtf_resurl.value))
                 throw new Exception("资源服务器地址不能为空！");
-            if (string.IsNullOrEmpty(txtf_bundleoutpath.value))
-                throw new Exception("AB包输出路径不能为空！");
+            // if (string.IsNullOrEmpty(txtf_bundleoutpath.value))
+            //     throw new Exception("AB包输出路径不能为空！");
             if (!string.IsNullOrEmpty(txtf_bundlefileex.value))
             {
                 if (!txtf_bundlefileex.value.StartsWith("."))
@@ -132,7 +132,7 @@ namespace LZX.MEditor.Window
             Setting obj = ScriptableObject.CreateInstance<Setting>();
             obj.ResourcesURL = txtf_resurl.value;
             obj.BundleEx = txtf_bundlefileex.value;
-            obj.BundleOutPath = txtf_bundleoutpath.value;
+            // obj.BundleOutPath = txtf_bundleoutpath.value;
             obj.LoadingBundleName = txtf_loadingbundlename.value;
             obj.LoadingBundlePath = txtf_loadingbundlepath.value;
             obj.HotUpdateDllName = txtf_hotupdatedllname.value;
