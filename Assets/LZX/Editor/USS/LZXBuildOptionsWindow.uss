@@ -24,7 +24,7 @@
 
 /* TextField 的样式 */
 TextField {
-    margin: 10px 0;
+    margin: 2px 0;
     color: #cccccc;
     background-color: #444444;
     font-size: 12px;

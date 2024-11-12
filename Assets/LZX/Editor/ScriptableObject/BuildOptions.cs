@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace LZX.MEditor.MScriptableObject
 {
@@ -10,6 +11,7 @@ namespace LZX.MEditor.MScriptableObject
         public List<BuildTarget> buildTargets = new List<BuildTarget>();
         public bool FollowBundle;
         public string outputPath;
+        public string LoadingUIPath;//Version
         public bool ClearFloder;
         public bool CopyTOStreamingAssets;
         public bool ExcludeTypeInformation;
@@ -18,6 +20,7 @@ namespace LZX.MEditor.MScriptableObject
         public bool AppendHash;
         public bool StrictMode;
         public bool DryRunBuild;
+        public bool ForceReplay;//Version
         public bool UseVersionControl = true;
         [SerializeField]
         private int compression;

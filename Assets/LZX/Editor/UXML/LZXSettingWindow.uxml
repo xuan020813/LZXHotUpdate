@@ -19,17 +19,17 @@
             <engine:TextField class="textfield" name="txtf_bundlefileex" />
         </engine:VisualElement>
         <engine:VisualElement class="content" name="content_loadingname">
-            <engine:Label text="加载UI包名：" class="label" name="labe_loadingbundlename" />
+            <engine:Label text="加载UI资源路径：" class="label" name="labe_loadingbundlename" />
             <engine:TextField class="textfield" name="txtf_loadingbundlename" />
         </engine:VisualElement>
         <engine:VisualElement class="content" name="content_loadingpath">
-            <engine:Label text="加载UI包路径：" class="label" name="labe_loadingbundlepath" />
+            <engine:Label text="加载UI包名：" class="label" name="labe_loadingbundlepath" />
             <engine:TextField class="textfield" name="txtf_loadingbundlepath" />
         </engine:VisualElement>
-        <engine:VisualElement class="content" name="">
-            <engine:Label text="热更新逻辑Dll名：" class="label" name="labe_hotupdatedllname" />
-            <engine:TextField class="textfield" name="txtf_hotupdatedllname" />
-        </engine:VisualElement>
+        <!-- <engine:VisualElement class="content" name=""> -->
+        <!--     <engine:Label text="热更新逻辑Dll名：" class="label" name="labe_hotupdatedllname" /> -->
+        <!--     <engine:TextField class="textfield" name="txtf_hotupdatedllname" /> -->
+        <!-- </engine:VisualElement> -->
         <!-- <engine:VisualElement class="drop" name=""> -->
         <!--     <engine:Label text="打包参数选择：" class="label" name="labe_options" /> -->
         <!--     <engine:ScrollView class="dropdownfield" name="dropdown_compress"/> -->

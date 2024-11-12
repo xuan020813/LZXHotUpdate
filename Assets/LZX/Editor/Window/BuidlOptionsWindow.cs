@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Mime;
 using LZX.MEditor.LZXStatic;
 using LZX.MEditor.MScriptableObject;
 using UnityEditor;
@@ -18,6 +19,7 @@ namespace LZX.MEditor.Window.Item
         #region UI引用
         public DropdownField dropdown_compression;
         public TextField txt_output;
+        public TextField txt_loadinguiname;
         public Toggle togl_win;
         public Toggle togl_ios;
         public Toggle togl_android;
@@ -32,6 +34,7 @@ namespace LZX.MEditor.Window.Item
         public Toggle togl_strictmode;
         public Toggle togl_dryrunbuild;
         public Toggle togl_useversioncontrol;
+        public Toggle togl_forcereplay;
         public Button btn_build;
         #endregion
         
@@ -48,6 +51,8 @@ namespace LZX.MEditor.Window.Item
             dropdown_compression = root.Q<DropdownField>("dropdown_compression");
             txt_output = root.Q<TextField>("txt_output");
             txt_output.RegisterCallback<ClickEvent>(OnClickTextField);
+            txt_loadinguiname = root.Q<TextField>("txt_loadinguiname");
+            txt_loadinguiname.RegisterCallback<ClickEvent>(OnClickTextFieldFile);
             togl_win = root.Q<Toggle>("togl_win");
             togl_ios = root.Q<Toggle>("togl_ios");
             togl_android = root.Q<Toggle>("togl_android");
@@ -63,12 +68,14 @@ namespace LZX.MEditor.Window.Item
             togl_followbundle = root.Q<Toggle>("togl_followbundle");
             togl_followbundle.RegisterValueChangedCallback((evt) => { OnFollowBundle(); });
             togl_useversioncontrol = root.Q<Toggle>("togl_useversioncontrol");
+            togl_forcereplay = root.Q<Toggle>("togl_forcereplay");
             btn_build = root.Q<Button>("btn_build");
             btn_build.clicked += Build;
             #endregion
             #region 赋值
             dropdown_compression.index = buildOptions.Compression;
             txt_output.value = buildOptions.outputPath;
+            txt_loadinguiname.value = buildOptions.LoadingUIPath;
             togl_win.value = buildOptions.buildTargets.Contains(BuildTarget.StandaloneWindows64);
             togl_ios.value = buildOptions.buildTargets.Contains(BuildTarget.iOS);
             togl_android.value = buildOptions.buildTargets.Contains(BuildTarget.Android);
@@ -83,6 +90,7 @@ namespace LZX.MEditor.Window.Item
             togl_strictmode.value = buildOptions.StrictMode;
             togl_dryrunbuild.value = buildOptions.DryRunBuild;
             togl_useversioncontrol.value = buildOptions.UseVersionControl;
+            togl_forcereplay.value = buildOptions.ForceReplay;
             #endregion
         }
         private void OnClickTextField(ClickEvent evt)
@@ -97,6 +105,21 @@ namespace LZX.MEditor.Window.Item
                 {
                     // 将选择的路径设置为 TextField 的值
                     txtf.value = path;
+                }
+            }
+        }
+        private void OnClickTextFieldFile(ClickEvent evt)
+        {
+            var txtf = evt.target as TextField; 
+            if (evt.clickCount == 2)
+            {
+                // 弹出文件选择窗口
+                string path = EditorUtility.OpenFilePanel("Select a File", 
+                    Application.dataPath,"");
+                if (!string.IsNullOrEmpty(path))
+                {
+                    // 将选择的路径设置为 TextField 的值
+                    txtf.value = Path.GetFileName(path).Replace(Application.dataPath, "Assets");
                 }
             }
         }
@@ -116,6 +139,11 @@ namespace LZX.MEditor.Window.Item
                 return;
             }
 
+            if (string.IsNullOrEmpty(txt_loadinguiname.value))
+            {
+                EditorUtility.DisplayDialog("Error", "LoadingUIName是必须填的", "OK");
+                return;
+            }
             if (!togl_android.value && !togl_ios.value && !togl_win.value && !togl_switch.value &&
                 !togl_followbundle.value)
             {
@@ -126,6 +154,7 @@ namespace LZX.MEditor.Window.Item
             #region 赋值
             buildOptions.Compression = dropdown_compression.index;
             buildOptions.outputPath = txt_output.value;
+            buildOptions.LoadingUIPath = txt_loadinguiname.value;
             buildOptions.buildTargets.Clear();
             if (togl_win.value)
                 buildOptions.buildTargets.Add(BuildTarget.StandaloneWindows64);
@@ -145,6 +174,7 @@ namespace LZX.MEditor.Window.Item
             buildOptions.StrictMode = togl_strictmode.value;
             buildOptions.DryRunBuild = togl_dryrunbuild.value;
             buildOptions.UseVersionControl = togl_useversioncontrol.value;
+            buildOptions.ForceReplay = togl_forcereplay.value;
             EditorUtility.SetDirty(buildOptions);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

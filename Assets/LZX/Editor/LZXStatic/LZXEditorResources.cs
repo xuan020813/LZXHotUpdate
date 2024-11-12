@@ -201,10 +201,12 @@ namespace LZX.MEditor.LZXStatic
             BuildOptions buildOptions = GetBuildOptions();
             VersionController versionController = GetVersionController();
             Setting setting = GetSetting();
+            setting.LoadingUIPath = buildOptions.LoadingUIPath;
             if (buildOptions.UseVersionControl)
             {
                 var versionObj = new VersionObject();
                 List<LZX.MScriptableObject.Bundle> bundleObjs = new List<LZX.MScriptableObject.Bundle>();
+                bool IsLoading = false;
                 foreach (var kvBundle in versionController.Bundles)
                 {
                     if (kvBundle.Value.IsBuild == "FALSE" || 
@@ -225,18 +227,35 @@ namespace LZX.MEditor.LZXStatic
                         assetObj.MD5 = GetMD5(asset.Replace("Assets", Application.dataPath));
                         assetObj.Dependencies = GetDependencies(asset).ToArray();
                         assetObjs.Add(assetObj);
+                        if (asset == setting.LoadingUIPath)
+                        {
+                            IsLoading = true;
+                            setting.LoadingBundleName = kvBundle.Value.Name;
+                        }
                     }
                     Versionbundle.MD5 = GetMD5(
                         Path.Combine(targetPath,kvBundle.Value.Name + setting.BundleEx)
                             .Replace("Assets", Application.dataPath));
+                    if (IsLoading)
+                    {
+                        IsLoading = false;
+                        versionObj.LoadingMD5 = Versionbundle.MD5;
+                    }
                     Versionbundle.Assets = assetObjs.ToArray();
                     bundleObjs.Add(Versionbundle);
                 }
                 versionObj.Bundles = bundleObjs.ToArray();
                 versionObj.version = string.Join(".", versionController.Version);
+                versionObj.setting = setting;
+                versionObj.ForeceReplay = buildOptions.ForceReplay;
+                GenerateHotUpdateDll();
                 string json = JsonUtility.ToJson(versionObj);
                 File.WriteAllText(Path.Combine(targetPath, "version.json"), json);
             }
+        }
+        private static void GenerateHotUpdateDll()
+        {
+            throw new NotImplementedException();
         }
         private static string GetMD5(string path)
         {

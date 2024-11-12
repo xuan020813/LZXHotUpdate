@@ -14,6 +14,7 @@
         <engine:Toggle name="togl_followbundle" text="Follow Bundle" />
     </engine:VisualElement>
     <engine:TextField name="txt_output" label="Output Path" />
+    <engine:TextField name="txt_loadinguiname" label="LoadingUI Name" />
     <engine:Toggle name="togl_clearfloder" text="Clear Floder" />
     <engine:Toggle name="togl_copytostreamingassets" text="Copy to StreamingAssets" />
     <engine:DropdownField name="dropdown_compression" label="Compression" choices="None(LZMA),ChunkBased(LZ4),UnCompressed"/>
@@ -24,5 +25,6 @@
     <engine:Toggle name="togl_strictmode" text="Strict Mode" />
     <engine:Toggle name="togl_dryrunbuild" text="Dry Run Build" />
     <engine:Toggle name="togl_useversioncontrol" text="Use Version Control" />
+    <engine:Toggle name="togl_forcereplay" text="客户端本次更新完后强制重启"/>
     <engine:Button name="btn_build" text="Build" />
 </engine:UXML>

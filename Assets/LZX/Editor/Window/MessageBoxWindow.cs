@@ -20,8 +20,6 @@ namespace LZX.MEditor.Window
         public static void Show(string message, Action onYesButtonClick = null, Action onCancelButtonClick = null)
         {
             var window = GetWindow<MessageBoxWindow>();
-            window.minSize = new Vector2(300, 120);
-            window.maxSize = new Vector2(300, 120);
             window.message.text = message;
             window.OnYesButtonClick = onYesButtonClick;
             window.OnCancelButtonClick = onCancelButtonClick;

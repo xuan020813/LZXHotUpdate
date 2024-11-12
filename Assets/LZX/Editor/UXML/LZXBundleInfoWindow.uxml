@@ -12,7 +12,7 @@
                 <engine:Button class="button" name="btn_select" text="筛选" />
                 <engine:Button class="button" name="btn" text="生成清单文件" />
                 <engine:Button class="button" name="btn_buildAll" text="打包" />
-                <engine:TextField class="textfeild" name="textfield" />
+                <engine:TextField class="textfeild" name="txtf_bundlesearch" />
             </engine:VisualElement>
             <engine:VisualElement class="onhid" name="multiselectroot">
                 <engine:Button class="button" name="btn_cancel" text="取消多选" />
@@ -20,7 +20,7 @@
                 <engine:Button class="button" name="btn_inverse" text="反选" />
                 <engine:Button class="button" name="btn_buildselect" text="打包所选" />
                 <engine:Button class="button" name="btn_deleteselect" text="删除所选" />
-                <engine:TextField class="textfeild" name="textfield" />
+                <engine:TextField class="textfeild" name="txtf_bundlesearch1" />
             </engine:VisualElement>
             <engine:ScrollView class="root" name="litemroot" />
             <engine:VisualElement class="root" name="inforoot">
@@ -44,8 +44,8 @@
         <engine:VisualElement class="cutting" name="cutting_line"/>
         <engine:VisualElement class="root" name="rightroot">
             <engine:VisualElement class="root" name="btnroot">
-                <engine:TextField class="textfeild" name="textfield" />
-                <engine:Button class="button" name="btn" text="清空" />
+                <engine:TextField class="textfeild" name="txtf_assetsearch" />
+                <engine:Button class="button" name="btn_emptyasset" text="清空资产" />
             </engine:VisualElement>
             <engine:ScrollView class="root" name="ritemroot" />
         </engine:VisualElement>

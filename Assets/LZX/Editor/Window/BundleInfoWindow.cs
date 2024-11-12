@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using LZX.MEditor.Enum;
 using LZX.MEditor.LZXStatic;
 using LZX.MEditor.MScriptableObject;
@@ -19,10 +20,8 @@ namespace LZX.MEditor.Window
         public StyleSheet uss;
         public StyleSheet itemuss;
         public VisualTreeAsset item;
-        
         public ScrollView BundleRoot;
         public ScrollView AssetRoot;
-
         #region Label
         public Label label_group;
         public Label label_dependience;
@@ -33,9 +32,8 @@ namespace LZX.MEditor.Window
         public Label label_assetcount;
         public Label label_name;
         #endregion
-        
         public Bundle curSelectBundle;
-
+        #region 多选
         private VisualElement btnroot;
         private VisualElement multiselectroot;
         private bool IsMultiSelect;
@@ -43,11 +41,12 @@ namespace LZX.MEditor.Window
         private bool IsAllSelect;
         private List<Toggle> BG_toggles = new List<Toggle>();
         private HashSet<Bundle> selectBundles = new HashSet<Bundle>();
-        
-        [MenuItem("LZX/Show")]
+        #endregion
+        [MenuItem("LZX/Windows/打包粒度控制窗口")]
         public static void ShowWindow()
         {
-            GetWindow<BundleInfoWindow>().minSize = new Vector2(600, 600);
+            var win = GetWindow<BundleInfoWindow>();
+            win.minSize = new Vector2(600, 600);
         }
         private void CreateGUI()
         {
@@ -64,7 +63,6 @@ namespace LZX.MEditor.Window
             
             btnroot = container.Q<VisualElement>("btnroot");
             multiselectroot = container.Q<VisualElement>("multiselectroot");
-            
             #region Label
             label_group = container.Q<Label>("label_group");
             label_dependience = container.Q<Label>("label_dependience");
@@ -75,26 +73,34 @@ namespace LZX.MEditor.Window
             label_assetcount = container.Q<Label>("label_assetcount");
             label_name = container.Q<Label>("label_name");
             #endregion
+            #region BUttonRoot
             var btn_addgroup = container.Q<Button>("btn_addgroup");
-            btn_addgroup.clicked += () => { AddBundle(); };
+            btn_addgroup.clicked += AddBundle;
             var btn_select = container.Q<Button>("btn_select");
-            btn_select.clicked += () => { OnSelectClick(); };
+            btn_select.clicked += OnSelectClick;
             var btn_buildAll = container.Q<Button>("btn_buildAll");
-            btn_buildAll.clicked += () => { OnBuildAllClick(); };
+            btn_buildAll.clicked += OnBuildAllClick;
             var btn_multiselect = container.Q<Button>("btn_multiselect");
             btn_multiselect.clicked += () => { OnMultiSelectClick(); };
-
+            var btn_emptyasset = container.Q<Button>("btn_emptyasset");
+            btn_emptyasset.clicked += OnEmptyAssetClick;
+            #endregion
             #region 多选Button
             var btn_cancel = container.Q<Button>("btn_cancel");
             btn_cancel.clicked += () => { OnMultiSelectClick(); };
             btn_allselect = container.Q<Button>("btn_allselect");
-            btn_allselect.clicked += () => { OnAllSelectClick(); };
+            btn_allselect.clicked += OnAllSelectClick;
             var btn_inverse = container.Q<Button>("btn_inverse");
-            btn_inverse.clicked += () => { OnInvertSelectClick(); };
+            btn_inverse.clicked += OnInvertSelectClick;
             var btn_buildselect = container.Q<Button>("btn_buildselect");
-            btn_buildselect.clicked += () => { OnBuildSelectClick(); };
+            btn_buildselect.clicked += OnBuildSelectClick;
             var btn_deleteselect = container.Q<Button>("btn_deleteselect");
-            btn_deleteselect.clicked += () => { OnDeleteSelectClick(); };
+            btn_deleteselect.clicked += OnDeleteSelectClick;
+            #endregion
+            #region Search
+            container.Q<TextField>("txtf_bundlesearch").RegisterValueChangedCallback(OnSearchBundleChange);
+            container.Q<TextField>("txtf_bundlesearch1").RegisterValueChangedCallback(OnSearchBundleChange);
+            container.Q<TextField>("txtf_assetsearch").RegisterValueChangedCallback(OnSearchAssetChange);
             #endregion
             root.Add(container);
             RefreshBundle();
@@ -134,9 +140,22 @@ namespace LZX.MEditor.Window
             foreach (var obj in DragAndDrop.objectReferences)
             {
                 string assetPath = AssetDatabase.GetAssetPath(obj);
-                //Debug.Log($"Dropped object: {assetPath}");
+                if(assetPath.EndsWith(".meta") || assetPath.EndsWith(".asset"))
+                    continue;
                 string absolutePath = assetPath.Replace("Assets", Application.dataPath);
-                ProcessingDrag(assetPath, absolutePath);
+                List<string> assets = new List<string>();
+                if (IsDir(absolutePath))
+                {
+                    assets.AddRange(Directory.GetFiles(absolutePath, "*", SearchOption.AllDirectories)
+                        .Where(v => !v.EndsWith(".meta") && !v.EndsWith(".asset"))
+                        .Select(v => v.Replace(Application.dataPath, "Assets"))
+                        .ToList());
+                }
+                else
+                {
+                    assets.Add(assetPath);
+                }
+                AddAsset(assets);
             }
         }
         private void ProcessingDrag(string assetPath, string absolutePath)
@@ -312,6 +331,37 @@ namespace LZX.MEditor.Window
             }
             RefreshBundle(selectedBundles);
         }
+        private void RefreshBundleWithSearch(string evtNewValue)
+        {
+            var bundles = GetBundles();
+            List<Bundle> selectedBundles = new List<Bundle>();
+            foreach (var bundle in bundles)
+            {
+                if (bundle.name.Contains(evtNewValue))
+                {
+                    selectedBundles.Add(bundle);
+                }
+            }
+            RefreshBundle(selectedBundles);
+            if(IsMultiSelect)
+                OnMultiSelectClick(true);
+        }
+        private void RefreshAssetWithSearch(string evtNewValue)
+        {
+            var asset = curSelectBundle.GetAssetPaths();
+            AssetRoot.Clear();
+            foreach (var path in asset)
+            {
+                if(!Path.GetFileNameWithoutExtension(path).ContainsInvariantCultureIgnoreCase(evtNewValue))
+                    continue;
+                string guid = AssetDatabase.AssetPathToGUID(path);
+                var ass = new Asset(guid);
+                var itemroot = item.CloneTree();
+                itemroot.styleSheets.Add(itemuss);
+                AssetItem assetItem = new AssetItem(ass,itemroot);
+                AssetRoot.Add(itemroot);
+            }
+        }
         #endregion
         #region Click
         private void OnSelectClick()
@@ -332,11 +382,11 @@ namespace LZX.MEditor.Window
             window.Switch.value = bundle.Platform.Contains(BuildTarget.Switch);
             window.IOS.value = bundle.Platform.Contains(BuildTarget.iOS);
             window.Android.value = bundle.Platform.Contains(BuildTarget.Android);
-            foreach (var item in window.Group.Children())
+            foreach (var element in window.Group.Children())
             {
-                if (item is ScrollView)
+                if (element is ScrollView)
                 {
-                    foreach (var toggle in item.Children())
+                    foreach (var toggle in element.Children())
                     {
                         if (toggle is Toggle t)
                         {
@@ -369,16 +419,19 @@ namespace LZX.MEditor.Window
             window.bundles = bundles;
             window.BuildAll = true;
         }
-        private void OnMultiSelectClick()
+        private void OnMultiSelectClick(bool IsSearch = false)
         {
-            IsMultiSelect = !IsMultiSelect;
-            btnroot.style.display = IsMultiSelect ? DisplayStyle.None : DisplayStyle.Flex;
-            multiselectroot.style.display = IsMultiSelect ? DisplayStyle.Flex : DisplayStyle.None;
+            if(!IsSearch)
+            {
+                IsMultiSelect = !IsMultiSelect;
+                btnroot.style.display = IsMultiSelect ? DisplayStyle.None : DisplayStyle.Flex;
+                multiselectroot.style.display = IsMultiSelect ? DisplayStyle.Flex : DisplayStyle.None;
+            }
             var items = BundleRoot.Children();
             int count = 0;
-            foreach (var item in items)
+            foreach (var element in items)
             {
-                if (item is TemplateContainer container)
+                if (element is TemplateContainer container)
                 {
                     count++;
                     var labelroot = container.Q<VisualElement>("BG");
@@ -439,6 +492,25 @@ namespace LZX.MEditor.Window
             {
                 toggle.value = IsAllSelect;
             }
+        }
+        private void OnEmptyAssetClick()
+        {
+            MessageBoxWindow.Show("确定要清空资源嘛？", 
+                () => {
+                curSelectBundle.AssetGUIDs.Clear();
+                EditorUtility.SetDirty(curSelectBundle);
+                AssetDatabase.SaveAssets();
+                RefreshAsset(curSelectBundle);});
+        }
+        #endregion
+        #region Search
+        private void OnSearchBundleChange(ChangeEvent<string> evt)
+        {
+            RefreshBundleWithSearch(evt.newValue);
+        }
+        private void OnSearchAssetChange(ChangeEvent<string> evt)
+        {
+            RefreshAssetWithSearch(evt.newValue);
         }
         #endregion
         private void AddBundle()
@@ -544,24 +616,83 @@ namespace LZX.MEditor.Window
         }
         private void AddAsset(string assetPath)
         {
-            if(!curSelectBundle.AssetGUIDs.Contains(AssetDatabase.AssetPathToGUID(assetPath)))
-                curSelectBundle.AssetGUIDs.Add(AssetDatabase.AssetPathToGUID(assetPath));
+            var bundles = GetBundles();
+            List<Bundle> repeted = new List<Bundle>();
+            foreach (var bundle in bundles)
+            {
+                if (bundle.AssetGUIDs.Contains(AssetDatabase.AssetPathToGUID(assetPath)))
+                {
+                    if (bundle != curSelectBundle)
+                    {
+                        repeted.Add(bundle);
+                    }
+                }
+            }
+            if (repeted.Count > 0)
+            {
+                MessageBoxWindow.Show($"资产已存在于:{string.Join(",", repeted.Select(b => b.Name))}中",
+                    () => {
+                        if(!curSelectBundle.AssetGUIDs.Contains(AssetDatabase.AssetPathToGUID(assetPath)))
+                            curSelectBundle.AssetGUIDs.Add(AssetDatabase.AssetPathToGUID(assetPath));
+                    });
+            }
+            else
+            {
+                if(!curSelectBundle.AssetGUIDs.Contains(AssetDatabase.AssetPathToGUID(assetPath)))
+                    curSelectBundle.AssetGUIDs.Add(AssetDatabase.AssetPathToGUID(assetPath));
+            }
             EditorUtility.SetDirty(curSelectBundle);
             AssetDatabase.SaveAssets();
-            #region 弃用
-            // string path = "Assets/LZX/Bundles/" + curSelectBundle.Name;
-            // if(!Directory.Exists(path.Replace("Assets", Application.dataPath)))
-            //     throw new Exception("Bundle不存在");
-            // Asset asset = ScriptableObject.CreateInstance<Asset>();
-            // asset.Name = Path.GetFileNameWithoutExtension(assetPath);
-            // asset.GUID = AssetDatabase.AssetPathToGUID(assetPath);
-            // asset.LoadPath = assetPath;
-            // asset.Size = new FileInfo(assetPath).Length.ToString("f2");//TODO:获取某个文件的大小
-            // asset.Dependences = LZXEditorResources.GetDependencies(assetPath).ToArray();
-            //AssetDatabase.CreateAsset(asset,$"{path}/{asset.Name}.asset");
-            //AssetDatabase.Refresh();
-            #endregion
             RefreshAsset(curSelectBundle);
+        }
+        private void AddAsset(List<string> assetsPath)
+        {
+            Dictionary<string, List<string>> repeated = new Dictionary<string, List<string>>();
+            foreach (var path in assetsPath)
+            {
+                string guid = AssetDatabase.AssetPathToGUID(path);
+                foreach (var bundle in GetBundles())
+                {
+                    if (bundle.AssetGUIDs.Contains(guid))
+                    {
+                        if (!repeated.ContainsKey(path))
+                            repeated[path] = new List<string>();
+                        repeated[path].Add(bundle.Name);
+                    }
+                }
+            }
+            
+            string warning = "";
+            foreach (var kv in repeated)
+            {
+                warning += $"资产：{kv.Key} 已经存在于Bundle：{string.Join(",", kv.Value)}中\n";
+            }
+            if (warning != "")
+            {
+                MessageBoxWindow.Show(warning, () => {
+                    foreach (var path in assetsPath)
+                    {
+                        string guid = AssetDatabase.AssetPathToGUID(path);
+                        if (!curSelectBundle.AssetGUIDs.Contains(guid))
+                            curSelectBundle.AssetGUIDs.Add(guid);
+                    }
+                    EditorUtility.SetDirty(curSelectBundle);
+                    AssetDatabase.SaveAssets();
+                    RefreshAsset(curSelectBundle);
+                });
+            }
+            else
+            {
+                foreach (var path in assetsPath)
+                {
+                    string guid = AssetDatabase.AssetPathToGUID(path);
+                    if (!curSelectBundle.AssetGUIDs.Contains(guid))
+                        curSelectBundle.AssetGUIDs.Add(guid);
+                }
+                EditorUtility.SetDirty(curSelectBundle);
+                AssetDatabase.SaveAssets();
+                RefreshAsset(curSelectBundle);
+            }
         }
         private List<Bundle> GetBundles()
         {

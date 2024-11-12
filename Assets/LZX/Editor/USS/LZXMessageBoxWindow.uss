@@ -6,7 +6,7 @@
     border-radius: 10px;
     color: white;
     font-size: 18px;
-    -unity-text-align: middle-center;
+    -unity-text-align: middle-left;
 }
 Button{
     height: 60%;

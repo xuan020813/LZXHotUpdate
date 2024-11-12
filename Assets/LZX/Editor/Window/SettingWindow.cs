@@ -23,8 +23,8 @@ namespace LZX.MEditor.Window
         private TextField txtf_resurl;
         // private TextField txtf_bundleoutpath;
         private TextField txtf_bundlefileex;
+        private TextField txtf_loadinguipath;
         private TextField txtf_loadingbundlename;
-        private TextField txtf_loadingbundlepath;
         private TextField txtf_hotupdatedllname;
 
         public VisualElement loadingName;
@@ -44,12 +44,12 @@ namespace LZX.MEditor.Window
             txtf_resurl.RegisterCallback<ClickEvent>(OnPathTextFieldClick);
             // txtf_bundleoutpath = root.Q<TextField>("txtf_bundleoutpath");
             // txtf_bundleoutpath.RegisterCallback<ClickEvent>(OnPathTextFieldClick);
-            txtf_loadingbundlename = root.Q<TextField>("txtf_loadingbundlename");
-            txtf_loadingbundlename.RegisterCallback<ClickEvent>(OnFileTextFieldClick);
-            txtf_loadingbundlepath = root.Q<TextField>("txtf_loadingbundlepath");
-            txtf_loadingbundlepath.RegisterCallback<ClickEvent>(OnPathTextFieldClick);
-            txtf_hotupdatedllname = root.Q<TextField>("txtf_hotupdatedllname");
-            txtf_hotupdatedllname.RegisterCallback<ClickEvent>(OnFileTextFieldClick);
+            txtf_loadinguipath = root.Q<TextField>("txtf_loadingbundlename");
+            txtf_loadinguipath.RegisterCallback<ClickEvent>(OnFileTextFieldClick);
+            txtf_loadingbundlename = root.Q<TextField>("txtf_loadingbundlepath");
+            txtf_loadingbundlename.RegisterCallback<ClickEvent>(OnPathTextFieldClick);
+            // txtf_hotupdatedllname = root.Q<TextField>("txtf_hotupdatedllname");
+            // txtf_hotupdatedllname.RegisterCallback<ClickEvent>(OnFileTextFieldClick);
             var btn_save = root.Q<Button>("btn_save");
             btn_save.clicked += () => { SaveSetting(); };
             #endregion
@@ -98,9 +98,8 @@ namespace LZX.MEditor.Window
             txtf_resurl.value = setting.ResourcesURL;
             // txtf_bundleoutpath.value = setting.BundleOutPath;
             txtf_bundlefileex.value = setting.BundleEx;
+            txtf_loadinguipath.value = setting.LoadingUIPath;
             txtf_loadingbundlename.value = setting.LoadingBundleName;
-            txtf_loadingbundlepath.value = setting.LoadingBundlePath;
-            txtf_hotupdatedllname.value = setting.HotUpdateDllName;
         }
 
         private void SaveSetting()
@@ -119,11 +118,11 @@ namespace LZX.MEditor.Window
             }
             else
                 throw new Exception("AB包文件扩展名不能为空！");
-            if (!string.IsNullOrEmpty(txtf_loadingbundlename.value))
+            if (!string.IsNullOrEmpty(txtf_loadinguipath.value))
             {
                 
             }
-            if (!string.IsNullOrEmpty(txtf_loadingbundlepath.value) && !txtf_loadingbundlepath.value.StartsWith("Assets/"))
+            if (!string.IsNullOrEmpty(txtf_loadingbundlename.value) && !txtf_loadingbundlename.value.StartsWith("Assets/"))
                 throw new Exception("AB包加载路径必须在Assets目录下！");
             if (string.IsNullOrEmpty(txtf_hotupdatedllname.value))
                 throw new Exception("热更DLL名称不能为空！");
@@ -133,9 +132,8 @@ namespace LZX.MEditor.Window
             obj.ResourcesURL = txtf_resurl.value;
             obj.BundleEx = txtf_bundlefileex.value;
             // obj.BundleOutPath = txtf_bundleoutpath.value;
+            obj.LoadingUIPath = txtf_loadinguipath.value;
             obj.LoadingBundleName = txtf_loadingbundlename.value;
-            obj.LoadingBundlePath = txtf_loadingbundlepath.value;
-            obj.HotUpdateDllName = txtf_hotupdatedllname.value;
             AssetDatabase.CreateAsset(obj, "Assets/LZX/ScriptableObject/Setting.asset");
             AssetDatabase.SaveAssets();
             EditorUtility.DisplayDialog("提示", "设置保存成功！", "确定");
