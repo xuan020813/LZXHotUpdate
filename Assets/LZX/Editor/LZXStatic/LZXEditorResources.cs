@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using HybridCLR.Editor;
+using HybridCLR.Editor.Commands;
+using HybridCLR.Editor.Settings;
 using LZX.MEditor.Enum;
 using LZX.MEditor.MScriptableObject;
 using LZX.MScriptableObject;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 using Asset = LZX.MScriptableObject.Asset;
 using BuildOptions = LZX.MEditor.MScriptableObject.BuildOptions;
@@ -79,10 +83,10 @@ namespace LZX.MEditor.LZXStatic
         public static Setting GetSetting()
         {
             if (!File.Exists(
-                    "Assets/LZX/ScriptableObject/Setting.asset".Replace("Assets",
+                    "Assets/LZX/UnHotUpdate/ScriptableObject/Setting.asset".Replace("Assets",
                         Application.dataPath)))
                 return null;
-            return AssetDatabase.LoadAssetAtPath<Setting>("Assets/LZX/ScriptableObject/Setting.asset");
+            return AssetDatabase.LoadAssetAtPath<Setting>("Assets/LZX/UnHotUpdate/ScriptableObject/Setting.asset");
         }
         public static BuildOptions GetBuildOptions()
         {
@@ -139,6 +143,7 @@ namespace LZX.MEditor.LZXStatic
         }
         private static void Build(Dictionary<BuildTarget, List<AssetBundleBuild>> builds,bool BuidlAll)
         {
+            var setting = GetSetting();
             var versionController = GetVersionController();
             versionController.Version[4] += 1;
             EditorUtility.SetDirty(versionController);
@@ -161,6 +166,24 @@ namespace LZX.MEditor.LZXStatic
             #endregion
             foreach (var kv in builds)
             {
+                #region CheckGenerate
+                if (Directory.Exists(Path.Combine(
+                        Application.dataPath.Replace("Assets", "HybridCLRData/AssembliesPostIl2CppStrip")
+                        , kv.Key.ToString())))
+                    LZXDllController.CheckMetaDataDlls(kv.Key);
+                else
+                    LZXDllController.GenerateAll(kv.Key);
+                #endregion
+
+                var dlls = Directory.GetFiles(
+                    Path.Combine(Application.dataPath, "LZX/AOTDlls", kv.Key.ToString()))
+                    .Where(v => v.EndsWith(".bytes"))
+                    .Select(v => v.Replace(Application.dataPath, "Assets"));
+                AssetBundleBuild dllBundle = new AssetBundleBuild();
+                dllBundle.assetBundleName = "MetaDataDlls" + setting.BundleEx;
+                dllBundle.assetNames = dlls.ToArray();
+                kv.Value.Add(dllBundle);
+                
                 string targetPath = Path.Combine(buildOptions.outputPath, kv.Key.ToString())
                     .Replace(Application.dataPath, "Assets");
                 if(BuidlAll && buildOptions.ClearFloder && Directory.Exists(targetPath))
@@ -172,9 +195,27 @@ namespace LZX.MEditor.LZXStatic
                     kv.Value.ToArray(),
                     assetBundleOptions, 
                     kv.Key);
+                //CopyAssembliesPostIl2CppStripToOutPath(kv.Key);
+                GenerateHotUpdateDll(kv.Key);
                 GenerateVersionList(targetPath);
             }
         }
+        // private static void CopyAssembliesPostIl2CppStripToOutPath(BuildTarget target)
+        // {
+        //     var buildOptions = GetBuildOptions();
+        //     // GenerateAll(target);
+        //     string assetparentPath = Path.GetDirectoryName(Application.dataPath);
+        //     string dllPath = Path.Combine(assetparentPath, "HybridCLRData/AssembliesPostIl2CppStrip",
+        //         target.ToString());
+        //     var files = Directory.GetFiles(dllPath, "*.*", SearchOption.AllDirectories);
+        //     string dest = Path.Combine(buildOptions.outputPath, target.ToString(), "AssembliesPostIl2CppStrip");
+        //     if (!Directory.Exists(dest))
+        //         Directory.CreateDirectory(dest);
+        //     foreach (var file in files)
+        //     {
+        //         File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), true);
+        //     }
+        // }
         private static void CopyToStreamingAssets()
         {
             BuildOptions buildOptions = GetBuildOptions();
@@ -186,13 +227,12 @@ namespace LZX.MEditor.LZXStatic
                 if(Directory.Exists(Application.streamingAssetsPath))
                     Directory.Delete(Application.streamingAssetsPath, true);
                 Directory.CreateDirectory(Application.streamingAssetsPath);
-                var files = Directory.GetFiles(copyPath, "*.*", SearchOption.AllDirectories);
+                var files = Directory.GetFiles(copyPath);
                 foreach (var file in files)
                 {
                     if(file.EndsWith(".meta") || file.EndsWith("manifest") || file.EndsWith(EditorUserBuildSettings.activeBuildTarget.ToString()))
                         continue;
-                    string dest = Path.Combine(Application.streamingAssetsPath, Path.GetFileName(file));
-                    File.Copy(file, dest, true);
+                    File.Copy(file, Path.Combine(Application.streamingAssetsPath, Path.GetFileName(file)), true);
                 }
             }
         }
@@ -204,7 +244,7 @@ namespace LZX.MEditor.LZXStatic
             setting.LoadingUIPath = buildOptions.LoadingUIPath;
             if (buildOptions.UseVersionControl)
             {
-                var versionObj = new VersionObject();
+                var versionObj = ScriptableObject.CreateInstance<VersionObject>();
                 List<LZX.MScriptableObject.Bundle> bundleObjs = new List<LZX.MScriptableObject.Bundle>();
                 bool IsLoading = false;
                 foreach (var kvBundle in versionController.Bundles)
@@ -244,18 +284,45 @@ namespace LZX.MEditor.LZXStatic
                     Versionbundle.Assets = assetObjs.ToArray();
                     bundleObjs.Add(Versionbundle);
                 }
+                var dlls = Directory.GetFiles(targetPath, "*.dll.bytes", SearchOption.AllDirectories).ToList();
+                if (dlls.Count > 0)
+                {
+                    foreach (var dll in dlls)
+                    {
+                        if (dll.Contains("HotUpdate.dll.bytes"))
+                        {
+                            string md5 = GetMD5(dll);
+                            versionObj.HotUpdateDllMD5 = md5;
+                            continue;
+                        }
+                        var dllObj = new Bundle();
+                        dllObj.Name = Path.GetFileName(dll);
+                        dllObj.MD5 = GetMD5(dll);
+                        bundleObjs.Add(dllObj);
+                    }
+                }
                 versionObj.Bundles = bundleObjs.ToArray();
                 versionObj.version = string.Join(".", versionController.Version);
-                versionObj.setting = setting;
+                versionObj.BundleEx = setting.BundleEx;
+                versionObj.ResourcesURL = setting.ResourcesURL;
+                versionObj.LoadingUIPath = setting.LoadingUIPath;
+                versionObj.LoadingBundleName = setting.LoadingBundleName;
                 versionObj.ForeceReplay = buildOptions.ForceReplay;
-                GenerateHotUpdateDll();
                 string json = JsonUtility.ToJson(versionObj);
                 File.WriteAllText(Path.Combine(targetPath, "version.json"), json);
             }
         }
-        private static void GenerateHotUpdateDll()
+        private static void GenerateHotUpdateDll(BuildTarget target)
         {
-            throw new NotImplementedException();
+            BuildOptions buildOptions = GetBuildOptions();
+            string dllPath = Application.dataPath.Replace("Assets",SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target));
+            string bundleOutfullPath = Path.Combine(buildOptions.outputPath, target.ToString());
+            foreach (var assembly in HybridCLRSettings.Instance.hotUpdateAssemblyDefinitions)
+            {
+                string dllName = assembly.name+".dll";
+                string dllFullName = Path.Combine(dllPath, dllName);
+                File.Copy(dllFullName, Path.Combine(bundleOutfullPath, dllName+".dll"+".bytes"),true);
+            }
         }
         private static string GetMD5(string path)
         {
@@ -270,6 +337,7 @@ namespace LZX.MEditor.LZXStatic
             return !File.Exists(Path.Combine(Application.dataPath, "LZX/Bundles/" + bundleName + ".asset"))
                 ? null : AssetDatabase.LoadAssetAtPath<MScriptableObject.Bundle>("Assets/LZX/Bundles/" + bundleName + ".asset");
         }
+        
     }
     public enum LZXIconType
     {

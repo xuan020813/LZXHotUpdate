@@ -2,7 +2,8 @@
     "name": "LZXEditor",
     "rootNamespace": "",
     "references": [
-        "GUID:c80a81e0af319604d9d05c3d6fad8682"
+        "GUID:c80a81e0af319604d9d05c3d6fad8682",
+        "GUID:2373f786d14518f44b0f475db77ba4de"
     ],
     "includePlatforms": [
         "Editor"

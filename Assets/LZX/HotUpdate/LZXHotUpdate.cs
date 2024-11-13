@@ -21,7 +21,7 @@ namespace LZX.HotUpdate
             version = ScriptableObject.CreateInstance<VersionObject>();
             string json = File.ReadAllText(Application.persistentDataPath + "/version.json");
             JsonUtility.FromJsonOverwrite(json, version);
-            resourcesURL = Path.Combine(version.setting.ResourcesURL, Application.platform.ToString());
+            resourcesURL = Path.Combine(version.ResourcesURL, Application.platform.ToString());
             Loadloading();
             loadingUI.UpdateDesc("正在检查更新...");
             await GetServerVersionObj();
@@ -124,11 +124,11 @@ namespace LZX.HotUpdate
         {
             if (server_version.HotUpdateDllMD5 != version.HotUpdateDllMD5)
             {
-                LZXDownLoad.DownFileInfo loadingBundle = new LZXDownLoad.DownFileInfo();
-                loadingBundle.url = Path.Combine(resourcesURL,"HotUpdate.dll.bytes");
-                await LZXDownLoad.DownLoadFileAsync(loadingBundle);
+                LZXDownLoad.DownFileInfo hotupdatedll = new LZXDownLoad.DownFileInfo();
+                hotupdatedll.url = Path.Combine(resourcesURL,"HotUpdate.dll.bytes");
+                await LZXDownLoad.DownLoadFileAsync(hotupdatedll);
                 await LZXDownLoad.WriteFile(Path.Combine(Application.persistentDataPath, "HotUpdate.dll.bytes.temp"),
-                    loadingBundle.fileData.data);
+                    hotupdatedll.fileData.data);
                 if (server_version.ForeceReplay)
                 {
 #if UNITY_EDITOR
@@ -155,8 +155,8 @@ namespace LZX.HotUpdate
         {
             var bundle =
                 await AssetBundle.LoadFromFileAsync(
-                    Path.Combine(Application.persistentDataPath, version.setting.LoadingBundleName));
-            var go = bundle.LoadAsset<GameObject>(version.setting.LoadingUIPath);
+                    Path.Combine(Application.persistentDataPath, version.LoadingBundleName));
+            var go = bundle.LoadAsset<GameObject>(version.LoadingUIPath);
             Instantiate(go);
             bundle.Unload(false);
             var type = Assembly.GetAssembly(typeof(LoadingUI))

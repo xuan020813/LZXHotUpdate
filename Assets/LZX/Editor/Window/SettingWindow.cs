@@ -124,17 +124,17 @@ namespace LZX.MEditor.Window
             }
             if (!string.IsNullOrEmpty(txtf_loadingbundlename.value) && !txtf_loadingbundlename.value.StartsWith("Assets/"))
                 throw new Exception("AB包加载路径必须在Assets目录下！");
-            if (string.IsNullOrEmpty(txtf_hotupdatedllname.value))
-                throw new Exception("热更DLL名称不能为空！");
-            if(!txtf_hotupdatedllname.value.EndsWith(".bytes"))
-                    throw new Exception("热更DLL名称必须以.bytes结尾！");
+            // if (string.IsNullOrEmpty(txtf_hotupdatedllname.value))
+            //     throw new Exception("热更DLL名称不能为空！");
+            // if(!txtf_hotupdatedllname.value.EndsWith(".bytes"))
+            //         throw new Exception("热更DLL名称必须以.bytes结尾！");
             Setting obj = ScriptableObject.CreateInstance<Setting>();
             obj.ResourcesURL = txtf_resurl.value;
             obj.BundleEx = txtf_bundlefileex.value;
             // obj.BundleOutPath = txtf_bundleoutpath.value;
             obj.LoadingUIPath = txtf_loadinguipath.value;
             obj.LoadingBundleName = txtf_loadingbundlename.value;
-            AssetDatabase.CreateAsset(obj, "Assets/LZX/ScriptableObject/Setting.asset");
+            AssetDatabase.CreateAsset(obj, "Assets/LZX/UnHotUpdate/ScriptableObject/Setting.asset");
             AssetDatabase.SaveAssets();
             EditorUtility.DisplayDialog("提示", "设置保存成功！", "确定");
             AssetDatabase.Refresh();

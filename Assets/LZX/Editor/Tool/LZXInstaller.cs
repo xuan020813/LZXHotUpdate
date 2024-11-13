@@ -1,7 +1,9 @@
 ﻿using System.IO;
+using HybridCLR.Editor.Settings;
 using LZX.MEditor.MScriptableObject;
 using LZX.MEditor.Window;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -39,15 +41,15 @@ namespace LZX.MEditor.Tool
                 buildOptions.Compression = 0;
                 AssetDatabase.CreateAsset(buildOptions, BuildOptionsPath);
             }
-
-            // string DefaultOutput = Path.Combine(Application.dataPath, "LZX/Bundles/Output");
-            // if (!Directory.Exists(DefaultOutput))
-            //     Directory.CreateDirectory(DefaultOutput);
             
             var settingwindow = EditorWindow.GetWindow<SettingWindow>();
             settingwindow.minSize = new Vector2(480, 180);
             settingwindow.loadingName.style.display = DisplayStyle.None;
             settingwindow.loadingPath.style.display = DisplayStyle.None;
+            
+            AssemblyDefinitionAsset bundleAssembly = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>("Assets/LZX/HotUpdate/HotUpdate.asmdef");
+            HybridCLRSettings.Instance.hotUpdateAssemblyDefinitions = new[] { bundleAssembly };
+            HybridCLRSettings.Save();
             
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

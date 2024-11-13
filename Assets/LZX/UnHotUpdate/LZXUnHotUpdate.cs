@@ -105,12 +105,12 @@ public class LZXUnHotUpdate : MonoBehaviour
 
     private async Task Loadloading()
     {
-        var loading = version.setting.LoadingBundleName;
+        var loading = version.LoadingBundleName;
         LZXDownLoad.DownFileInfo loadingFile = new LZXDownLoad.DownFileInfo();
         loadingFile.url = Path.Combine(Application.streamingAssetsPath, loading);
         await LZXDownLoad.DownLoadFileAsync(loadingFile, 0);
         var bundle = AssetBundle.LoadFromMemory(loadingFile.fileData.data);
-        var ui = bundle.LoadAsset(version.setting.LoadingUIPath);
+        var ui = bundle.LoadAsset(version.LoadingUIPath);
         GameObject.Instantiate(ui);
         //AddComponent
         var type = Assembly.GetAssembly(typeof(LoadingUI))
@@ -131,7 +131,7 @@ public class LZXUnHotUpdate : MonoBehaviour
         {
             count++;
             LZXDownLoad.DownFileInfo bundleFile = new LZXDownLoad.DownFileInfo();
-            bundleFile.url = Path.Combine(Application.streamingAssetsPath, bundle.Name+version.setting.BundleEx);
+            bundleFile.url = Path.Combine(Application.streamingAssetsPath, bundle.Name+version.BundleEx);
             loadingUI.UpdateProgress($"数量:{count}/{version.Bundles.Length}");
             while (true)//循环重试，直到成功下载
             {
@@ -141,14 +141,14 @@ public class LZXUnHotUpdate : MonoBehaviour
                     await LZXDownLoad.WriteFile(
                         Path.Combine(Application.persistentDataPath,
                             version.version,
-                            bundle.Name + version.setting.BundleEx), 
+                            bundle.Name + version.BundleEx), 
                         bundleFile.fileData.data);
                     break;
                 }
                 catch (Exception e)
                 {
                     var retryCompletionSource = new UniTaskCompletionSource();
-                    loadingUI.UpdateDesc($"下载文件{bundle.Name+version.setting.BundleEx}失败\r\n,错误信息:{e.Message}");
+                    loadingUI.UpdateDesc($"下载文件{bundle.Name+version.BundleEx}失败\r\n,错误信息:{e.Message}");
                     loadingUI.ShowRetryButton(async () =>
                     {
                         retryCompletionSource.TrySetResult();
