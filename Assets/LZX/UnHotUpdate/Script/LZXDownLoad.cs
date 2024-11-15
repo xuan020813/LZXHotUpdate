@@ -34,20 +34,18 @@ namespace LZX.MScriptableObject
         /// <exception cref="Exception"></exception>
         public static async UniTask DownLoadFileAsync(DownFileInfo info,int retryCount = 0)
         {
-            using (UnityWebRequest webRequest = UnityWebRequest.Get(info.url))
+            UnityWebRequest webRequest = UnityWebRequest.Get(info.url);
+            while (retryCount < 5)
             {
-                while (retryCount < 5)
+                await webRequest.SendWebRequest();
+                await UniTask.Delay(1000); //TODO:此处延时能省略
+                if (webRequest.result == UnityWebRequest.Result.Success)
                 {
-                    await webRequest.SendWebRequest();
-                    await UniTask.Delay(1000);//TODO:此处延时能省略
-                    if (webRequest.result == UnityWebRequest.Result.Success)
-                    {
-                        info.fileData = webRequest.downloadHandler;
-                        return;
-                    }
+                    info.fileData = webRequest.downloadHandler;
+                    return;
                 }
-                throw new Exception("下载文件出错：" + info.url);
             }
+            throw new Exception("下载文件出错：" + info.url);
         }
         /// <summary>
         /// 写入文件

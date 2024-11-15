@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using LZX.MEditor.LZXStatic;
 using LZX.MEditor.MScriptableObject;
 using UnityEditor;
@@ -60,7 +61,6 @@ namespace LZX.MEditor.Window
 
             dropdown.RegisterValueChangedCallback(OnDropdownChanged);
         }
-
         private void OnYesButtonClick()
         {
             switch (dropdown.value)
@@ -78,18 +78,19 @@ namespace LZX.MEditor.Window
         }
         private void ScreenWithNone()
         {
-            var window = EditorWindow.GetWindow<BundleInfoWindow>();
+            var window = EditorWindow.GetWindow<LeftRootWindow>();
             window.Show();
             window.minSize = new Vector2(600, 600);
-            window.RefreshBundle();
+            window.OnScreening("", LeftRootWindow.ScreeningType.NONE);
             Close();
         }
         private void ScreenWithGroup()
         {
-            var window = EditorWindow.GetWindow<BundleInfoWindow>();
+            var window = EditorWindow.GetWindow<LeftRootWindow>();
             window.Show();
             window.minSize = new Vector2(600, 600);
-            window.RefreshWithGroup(TempGroupNameList);
+            var chioce = TempGroupNameList.Where(v => v.value).Select(v => v.text).ToList();
+            window.OnScreening(string.Join("_",chioce), LeftRootWindow.ScreeningType.GROUP);
             Close();
         }
         private void ScreenWithDate()
@@ -105,10 +106,11 @@ namespace LZX.MEditor.Window
             {
                 throw new Exception("没选日期你筛选你*呢？");
             }
-            var window = EditorWindow.GetWindow<BundleInfoWindow>();
+            var window = EditorWindow.GetWindow<LeftRootWindow>();
             window.Show();
             window.minSize = new Vector2(600, 600);
-            window.RefreshWithDate(label_left.text, label_right.text);
+            string str = label_left.text + "+" + label_right.text;
+            window.OnScreening(str, LeftRootWindow.ScreeningType.DATETIME);
             Close();
         }
         private Label label_left;
@@ -145,7 +147,6 @@ namespace LZX.MEditor.Window
                     break;
             }
         }
-
         private List<Toggle> TempGroupNameList = new List<Toggle>();
         private void AddToggle()
         {

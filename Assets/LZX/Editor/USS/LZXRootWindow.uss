@@ -1,0 +1,24 @@
+﻿Button{
+    width: 80px;
+    height: 28px;
+    padding: 1px;
+    margin: 1px;
+}
+#btnroot{
+    flex-direction: row;
+    justify-content: flex-start;
+}
+TextField{
+    display: flex;
+    flex-grow: 1;
+}
+ScrollView{
+    flex-grow: 1;
+}
+.root-container{
+    flex-grow: 1;
+}
+#root{
+    display: flex;
+    flex-grow: 1;
+}

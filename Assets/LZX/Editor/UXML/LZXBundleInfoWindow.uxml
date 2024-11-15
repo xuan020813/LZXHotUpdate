@@ -24,11 +24,6 @@
             </engine:VisualElement>
             <engine:ScrollView class="root" name="litemroot" />
             <engine:VisualElement class="root" name="inforoot">
-                <!-- <engine:VisualElement class="root" name="btnroot"> -->
-                <!--     <engine:Button class="button" name="btn" text="打包" /> -->
-                <!--     <engine:Button class="button" name="btn" text="重命名" /> -->
-                <!--     <engine:Button class="button" name="btn" text="重选分组" /> -->
-                <!-- </engine:VisualElement> -->
                 <engine:VisualElement class="root" name="labelroot">
                     <engine:Label class="label" name="label_name" text="Info" />
                     <engine:Label class="label" name="label_group" text="Info" />

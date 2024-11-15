@@ -13,7 +13,6 @@
         <engine:VisualElement class="root" name="Plat">
             <engine:Label text="平台:" />
             <engine:Toggle name="tgl_win" text="Win" />
-            <engine:Toggle name="tgl_mac" text="Switch" />
             <engine:Toggle name="tgl_ios" text="IOS" />
             <engine:Toggle name="tgl_android" text="Android" />
         </engine:VisualElement>

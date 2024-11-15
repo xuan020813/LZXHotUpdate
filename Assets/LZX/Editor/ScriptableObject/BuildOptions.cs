@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -20,7 +21,7 @@ namespace LZX.MEditor.MScriptableObject
         public bool AppendHash;
         public bool StrictMode;
         public bool DryRunBuild;
-        public bool ForceReplay;//Version
+        [FormerlySerializedAs("ForceReplay")] public bool ForceReStart;//Version
         public bool UseVersionControl = true;
         [SerializeField]
         private int compression;
@@ -44,6 +45,8 @@ namespace LZX.MEditor.MScriptableObject
                 }
             }
         }
+        [NonSerialized]
+        public string LoadingBundleName;
         public BuildAssetBundleOptions compressionType;
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd"
+>
+    <engine:VisualElement class="root-container" name="leftroot">
+        <engine:VisualElement class="row root" name="btnroot">
+            <engine:TextField class="textfield" name="txtf_assetsearch" />
+            <engine:Button name="btn_1" text="删除全部资产" class="button" />
+        </engine:VisualElement>
+        <engine:ScrollView name="scv_asset" class="scrollview"/>
+    </engine:VisualElement>
+</engine:UXML>

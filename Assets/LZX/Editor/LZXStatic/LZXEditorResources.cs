@@ -11,7 +11,9 @@ using LZX.MEditor.MScriptableObject;
 using LZX.MScriptableObject;
 using UnityEditor;
 using UnityEditor.Build;
+using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Asset = LZX.MScriptableObject.Asset;
 using BuildOptions = LZX.MEditor.MScriptableObject.BuildOptions;
 using Bundle = LZX.MScriptableObject.Bundle;
@@ -42,289 +44,38 @@ namespace LZX.MEditor.LZXStatic
         #region GetScriptableObject
         public static Texture2D GetIcon(LZXIconType iconType)
         {
-            switch (iconType)
-            {
-                case LZXIconType.cs:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/cs.png");;
-                case LZXIconType.delete:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/delete.png");
-                case LZXIconType.music:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/music.png");
-                case LZXIconType.prefab:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/prefab.png");
-                case LZXIconType.scene:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/scene.png");
-                case LZXIconType.setting:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/setting.png");
-                case LZXIconType.trans:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/trans.png");
-                case LZXIconType.build:
-                    return AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LZX/Editor/Sprite/build.png");
-                default:
-                    return null;
-            }
+            return AssetDatabase.LoadAssetAtPath<Texture2D>($"Assets/LZX/Editor/Sprite/{iconType}.png");;
         }
         public static VersionController GetVersionController()
         {
-            if (!File.Exists(
-                    "Assets/LZX/Editor/ScriptableObject/VersionController.asset".Replace("Assets",
-                        Application.dataPath)))
-                throw new Exception("请先Installer");
-            return AssetDatabase.LoadAssetAtPath<VersionController>("Assets/LZX/Editor/ScriptableObject/VersionController.asset");
+            if (!File.Exists(LZXResourcesUtil.GetVersionControllerPath().Replace("Assets", Application.dataPath)))
+                throw new Exception("未找到VersionController，请先Installer");
+            return AssetDatabase.LoadAssetAtPath<VersionController>(LZXResourcesUtil.GetVersionControllerPath());
         }
         public static BundleGroup GetBundleGroup()
         {
-            if (!File.Exists(
-                    "Assets/LZX/Editor/ScriptableObject/BundleGroup.asset".Replace("Assets",
-                        Application.dataPath)))
-                throw new Exception("请先Installer");
-            return AssetDatabase.LoadAssetAtPath<BundleGroup>("Assets/LZX/Editor/ScriptableObject/BundleGroup.asset");
+            if (!File.Exists(LZXResourcesUtil.GetBundleGroupPath().Replace("Assets", Application.dataPath)))
+                throw new Exception("未找到BundleGroup，请先Installer");
+            return AssetDatabase.LoadAssetAtPath<BundleGroup>(LZXResourcesUtil.GetBundleGroupPath());
         }
         public static Setting GetSetting()
         {
-            if (!File.Exists(
-                    "Assets/LZX/UnHotUpdate/ScriptableObject/Setting.asset".Replace("Assets",
-                        Application.dataPath)))
-                return null;
-            return AssetDatabase.LoadAssetAtPath<Setting>("Assets/LZX/UnHotUpdate/ScriptableObject/Setting.asset");
+            if (!File.Exists(LZXResourcesUtil.GetSettingsPath().Replace("Assets", Application.dataPath)))
+                throw new Exception("未找到Setting，请先Installer");
+            return AssetDatabase.LoadAssetAtPath<Setting>(LZXResourcesUtil.GetSettingsPath());
         }
         public static BuildOptions GetBuildOptions()
         {
-            if (!File.Exists(
-                    "Assets/LZX/Editor/ScriptableObject/BuildOptions.asset".Replace("Assets",
-                        Application.dataPath)))
-                return null;
-            return AssetDatabase.LoadAssetAtPath<BuildOptions>("Assets/LZX/Editor/ScriptableObject/BuildOptions.asset");
+            if (!File.Exists(LZXResourcesUtil.GetBuildOptionsPath().Replace("Assets", Application.dataPath)))
+                throw new Exception("未找到BuildOptions，请先Installer");
+            return AssetDatabase.LoadAssetAtPath<BuildOptions>(LZXResourcesUtil.GetBuildOptionsPath());
         }
-
+        public static AssemblyDefinitionAsset GetHotUpdateAssemblyDefinition()
+        {
+            return AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(LZXResourcesUtil.GetHotUpdateAssembleDefinePath());
+        }
         #endregion
-        public static void BuildBundle(List<MScriptableObject.Bundle> bundles,bool BuidlAll)
-        {
-            var setting = GetSetting();
-            var buildOptions = GetBuildOptions();
-            Dictionary<BuildTarget,List<AssetBundleBuild>> builds = new Dictionary<BuildTarget, List<AssetBundleBuild>>();
-            if (buildOptions.FollowBundle)
-            {
-                foreach (MScriptableObject.Bundle bundle in bundles)
-                {
-                    string[] assetPaths = bundle.GetAssetPaths();
-                    bundle.IsBuild = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-                    AssetBundleBuild build = new AssetBundleBuild();
-                    build.assetBundleName = bundle.Name + setting.BundleEx;
-                    build.assetNames = assetPaths;
-                    foreach (var plat in bundle.Platform)
-                    {
-                        if (!builds.ContainsKey(plat))
-                        {
-                            builds.Add(plat, new List<AssetBundleBuild>());
-                        }
-                        builds[plat].Add(build);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var target in buildOptions.buildTargets)
-                {
-                    builds.Add(target, new List<AssetBundleBuild>());
-                    foreach (var bundle in bundles)
-                    {
-                        string[] assetPaths = bundle.GetAssetPaths();
-                        bundle.IsBuild = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-                        AssetBundleBuild build = new AssetBundleBuild();
-                        build.assetBundleName = bundle.Name + setting.BundleEx;
-                        build.assetNames = assetPaths;
-                        builds[target].Add(build);
-                    }
-                }
-            }
-            Build(builds,BuidlAll);
-            CopyToStreamingAssets();
-        }
-        private static void Build(Dictionary<BuildTarget, List<AssetBundleBuild>> builds,bool BuidlAll)
-        {
-            var setting = GetSetting();
-            var versionController = GetVersionController();
-            versionController.Version[4] += 1;
-            EditorUtility.SetDirty(versionController);
-            AssetDatabase.SaveAssets();
-            var buildOptions = GetBuildOptions();
-            #region 参数设置
-            BuildAssetBundleOptions assetBundleOptions = buildOptions.compressionType;
-            if (buildOptions.ForceRebuild)
-                assetBundleOptions |= BuildAssetBundleOptions.ForceRebuildAssetBundle;
-            if(buildOptions.ExcludeTypeInformation)
-                assetBundleOptions |= BuildAssetBundleOptions.DisableWriteTypeTree;
-            if(buildOptions.AppendHash)
-                assetBundleOptions |= BuildAssetBundleOptions.AppendHashToAssetBundleName;
-            if (buildOptions.IgnoreTypeTreeChanges)
-                assetBundleOptions |= BuildAssetBundleOptions.IgnoreTypeTreeChanges;
-            if (buildOptions.DryRunBuild)
-                assetBundleOptions |= BuildAssetBundleOptions.DryRunBuild;
-            if (buildOptions.StrictMode)
-                assetBundleOptions |= BuildAssetBundleOptions.StrictMode;
-            #endregion
-            foreach (var kv in builds)
-            {
-                #region CheckGenerate
-                if (Directory.Exists(Path.Combine(
-                        Application.dataPath.Replace("Assets", "HybridCLRData/AssembliesPostIl2CppStrip")
-                        , kv.Key.ToString())))
-                    LZXDllController.CheckMetaDataDlls(kv.Key);
-                else
-                    LZXDllController.GenerateAll(kv.Key);
-                #endregion
-
-                var dlls = Directory.GetFiles(
-                    Path.Combine(Application.dataPath, "LZX/AOTDlls", kv.Key.ToString()))
-                    .Where(v => v.EndsWith(".bytes"))
-                    .Select(v => v.Replace(Application.dataPath, "Assets"));
-                AssetBundleBuild dllBundle = new AssetBundleBuild();
-                dllBundle.assetBundleName = "MetaDataDlls" + setting.BundleEx;
-                dllBundle.assetNames = dlls.ToArray();
-                kv.Value.Add(dllBundle);
-                
-                string targetPath = Path.Combine(buildOptions.outputPath, kv.Key.ToString())
-                    .Replace(Application.dataPath, "Assets");
-                if(BuidlAll && buildOptions.ClearFloder && Directory.Exists(targetPath))
-                    Directory.Delete(targetPath, true);
-                if (!Directory.Exists(targetPath))
-                    Directory.CreateDirectory(targetPath);
-                BuildPipeline.BuildAssetBundles(
-                    targetPath, 
-                    kv.Value.ToArray(),
-                    assetBundleOptions, 
-                    kv.Key);
-                //CopyAssembliesPostIl2CppStripToOutPath(kv.Key);
-                GenerateHotUpdateDll(kv.Key);
-                GenerateVersionList(targetPath);
-            }
-        }
-        // private static void CopyAssembliesPostIl2CppStripToOutPath(BuildTarget target)
-        // {
-        //     var buildOptions = GetBuildOptions();
-        //     // GenerateAll(target);
-        //     string assetparentPath = Path.GetDirectoryName(Application.dataPath);
-        //     string dllPath = Path.Combine(assetparentPath, "HybridCLRData/AssembliesPostIl2CppStrip",
-        //         target.ToString());
-        //     var files = Directory.GetFiles(dllPath, "*.*", SearchOption.AllDirectories);
-        //     string dest = Path.Combine(buildOptions.outputPath, target.ToString(), "AssembliesPostIl2CppStrip");
-        //     if (!Directory.Exists(dest))
-        //         Directory.CreateDirectory(dest);
-        //     foreach (var file in files)
-        //     {
-        //         File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), true);
-        //     }
-        // }
-        private static void CopyToStreamingAssets()
-        {
-            BuildOptions buildOptions = GetBuildOptions();
-            if (buildOptions.CopyTOStreamingAssets)
-            {
-                string copyPath = Path.Combine(buildOptions.outputPath,EditorUserBuildSettings.activeBuildTarget.ToString());
-                if (!Directory.Exists(copyPath))
-                    throw new Exception("当前构建平台未生成ab包");
-                if(Directory.Exists(Application.streamingAssetsPath))
-                    Directory.Delete(Application.streamingAssetsPath, true);
-                Directory.CreateDirectory(Application.streamingAssetsPath);
-                var files = Directory.GetFiles(copyPath);
-                foreach (var file in files)
-                {
-                    if(file.EndsWith(".meta") || file.EndsWith("manifest") || file.EndsWith(EditorUserBuildSettings.activeBuildTarget.ToString()))
-                        continue;
-                    File.Copy(file, Path.Combine(Application.streamingAssetsPath, Path.GetFileName(file)), true);
-                }
-            }
-        }
-        private static void GenerateVersionList(string targetPath)
-        {
-            BuildOptions buildOptions = GetBuildOptions();
-            VersionController versionController = GetVersionController();
-            Setting setting = GetSetting();
-            setting.LoadingUIPath = buildOptions.LoadingUIPath;
-            if (buildOptions.UseVersionControl)
-            {
-                var versionObj = ScriptableObject.CreateInstance<VersionObject>();
-                List<LZX.MScriptableObject.Bundle> bundleObjs = new List<LZX.MScriptableObject.Bundle>();
-                bool IsLoading = false;
-                foreach (var kvBundle in versionController.Bundles)
-                {
-                    if (kvBundle.Value.IsBuild == "FALSE" || 
-                        !File.Exists(Path.Combine(targetPath,kvBundle.Value.Name + setting.BundleEx)
-                                        .Replace("Assets", Application.dataPath)))
-                    {
-                        Debug.LogWarning($"AssetBundle：[{kvBundle.Value.Name}]还未构建，将不加入版本文件列表");
-                        continue;
-                    }
-                    var Versionbundle = new Bundle();
-                    Versionbundle.Name = kvBundle.Value.Name;
-                    var assets = kvBundle.Value.GetAssetPaths();
-                    List<LZX.MScriptableObject.Asset> assetObjs = new List<LZX.MScriptableObject.Asset>();
-                    foreach (var asset in assets)
-                    {
-                        LZX.MScriptableObject.Asset assetObj = new Asset();
-                        assetObj.LoadPath = asset;
-                        assetObj.MD5 = GetMD5(asset.Replace("Assets", Application.dataPath));
-                        assetObj.Dependencies = GetDependencies(asset).ToArray();
-                        assetObjs.Add(assetObj);
-                        if (asset == setting.LoadingUIPath)
-                        {
-                            IsLoading = true;
-                            setting.LoadingBundleName = kvBundle.Value.Name;
-                        }
-                    }
-                    Versionbundle.MD5 = GetMD5(
-                        Path.Combine(targetPath,kvBundle.Value.Name + setting.BundleEx)
-                            .Replace("Assets", Application.dataPath));
-                    if (IsLoading)
-                    {
-                        IsLoading = false;
-                        versionObj.LoadingMD5 = Versionbundle.MD5;
-                    }
-                    Versionbundle.Assets = assetObjs.ToArray();
-                    bundleObjs.Add(Versionbundle);
-                }
-                var dlls = Directory.GetFiles(targetPath, "*.dll.bytes", SearchOption.AllDirectories).ToList();
-                if (dlls.Count > 0)
-                {
-                    foreach (var dll in dlls)
-                    {
-                        if (dll.Contains("HotUpdate.dll.bytes"))
-                        {
-                            string md5 = GetMD5(dll);
-                            versionObj.HotUpdateDllMD5 = md5;
-                            continue;
-                        }
-                        var dllObj = new Bundle();
-                        dllObj.Name = Path.GetFileName(dll);
-                        dllObj.MD5 = GetMD5(dll);
-                        bundleObjs.Add(dllObj);
-                    }
-                }
-                versionObj.Bundles = bundleObjs.ToArray();
-                versionObj.version = string.Join(".", versionController.Version);
-                versionObj.BundleEx = setting.BundleEx;
-                versionObj.ResourcesURL = setting.ResourcesURL;
-                versionObj.LoadingUIPath = setting.LoadingUIPath;
-                versionObj.LoadingBundleName = setting.LoadingBundleName;
-                versionObj.ForeceReplay = buildOptions.ForceReplay;
-                string json = JsonUtility.ToJson(versionObj);
-                File.WriteAllText(Path.Combine(targetPath, "version.json"), json);
-            }
-        }
-        private static void GenerateHotUpdateDll(BuildTarget target)
-        {
-            BuildOptions buildOptions = GetBuildOptions();
-            string dllPath = Application.dataPath.Replace("Assets",SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target));
-            string bundleOutfullPath = Path.Combine(buildOptions.outputPath, target.ToString());
-            foreach (var assembly in HybridCLRSettings.Instance.hotUpdateAssemblyDefinitions)
-            {
-                string dllName = assembly.name+".dll";
-                string dllFullName = Path.Combine(dllPath, dllName);
-                File.Copy(dllFullName, Path.Combine(bundleOutfullPath, dllName+".dll"+".bytes"),true);
-            }
-        }
-        private static string GetMD5(string path)
+        public static string GetMD5(string path)
         {
             using (MD5 md5 = MD5.Create())
             {
@@ -332,12 +83,42 @@ namespace LZX.MEditor.LZXStatic
                 return BitConverter.ToString(hash).Replace("-", "").ToLower();;
             }
         }
-        public static MScriptableObject.Bundle GetBundleWithBundleName(string bundleName)
+        public static VisualTreeAsset GetItemUXML()
         {
-            return !File.Exists(Path.Combine(Application.dataPath, "LZX/Bundles/" + bundleName + ".asset"))
-                ? null : AssetDatabase.LoadAssetAtPath<MScriptableObject.Bundle>("Assets/LZX/Bundles/" + bundleName + ".asset");
+            return AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(LZXResourcesUtil.GetItemUxmlPath());
         }
-        
+        public static StyleSheet GetItemUSS()
+        {
+            return AssetDatabase.LoadAssetAtPath<StyleSheet>(LZXResourcesUtil.GetItemUssPath());
+        }
+        public static Bundle[] EditorBundle2RunTimeBundle(List<MScriptableObject.Bundle> bundles,string bundleOutPath)
+        {
+            List<Bundle> runtimeBundles = new List<Bundle>();
+            foreach (var bundle in bundles)
+            {
+                string editorBundlePath = Path.Combine(bundleOutPath, bundle.Name + GetSetting().BundleEx);
+                if (!File.Exists(editorBundlePath))
+                {
+                    Debug.LogError($"Bundle:{bundle.Name} 尚未构建，已跳过加入资产清单");
+                    continue;
+                }
+                Bundle runtimeBundle = new Bundle();
+                runtimeBundle.Name = bundle.Name;
+                runtimeBundle.MD5 = GetMD5(editorBundlePath);
+                List<Asset> runtimeAssets = new List<Asset>();
+                foreach (var aspath in bundle.GetAssetPaths())
+                {
+                    Asset asset = new Asset();
+                    asset.LoadPath = aspath;
+                    asset.MD5 = GetMD5(aspath.Replace("Assets", Application.dataPath));
+                    asset.Dependencies = GetDependencies(aspath).ToArray();
+                    runtimeAssets.Add(asset);
+                }
+                runtimeBundle.Assets = runtimeAssets.ToArray();
+                runtimeBundles.Add(runtimeBundle);
+            }
+            return runtimeBundles.ToArray();
+        }
     }
     public enum LZXIconType
     {

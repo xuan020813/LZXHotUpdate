@@ -1,7 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using HybridCLR.Editor;
+using HybridCLR.Editor.Settings;
+using LZX.MEditor.LZXStatic;
+using LZX.MScriptableObject;
 using UnityEngine;
 
 namespace LZX.MEditor.MScriptableObject
@@ -45,6 +50,25 @@ namespace LZX.MEditor.MScriptableObject
         public bool ContainsKey(string key)
         {
             return keys.Contains(key);
+        }
+        public VersionObject GeneratorVersionObject(LZXBundleBuild.LZXBundleBuildParameter parameter)
+        {
+            var versionObject = CreateInstance<VersionObject>();
+            LZXDllController.CopyDll2OutPut(parameter);
+            string hotupdatePath = parameter.OutputPath + "/HotUpdate.dll.bytes";
+            if (!File.Exists(hotupdatePath))
+                throw new Exception("HotUpdate.dll.bytes not found in output path");
+            versionObject.HotUpdateDllMD5 = LZXEditorResources.GetMD5(hotupdatePath);
+            if(!File.Exists(Path.Combine(parameter.OutputPath,parameter.LoadingBundleName+LZXEditorResources.GetSetting().BundleEx)))
+                throw new Exception("Loading bundle not found in output path");
+            versionObject.LoadingMD5 = LZXEditorResources.GetMD5(Path.Combine(parameter.OutputPath,parameter.LoadingBundleName+LZXEditorResources.GetSetting().BundleEx));
+            versionObject.version = string.Join(".", Version);
+            versionObject.BundleEx = LZXEditorResources.GetSetting().BundleEx;
+            versionObject.LoadingUIPath = parameter.LoadingUIPath;
+            versionObject.LoadingBundleName = parameter.LoadingBundleName;
+            versionObject.ResourcesURL = Path.Combine(LZXEditorResources.GetSetting().ResourcesURL, parameter.Target.ToString());
+            versionObject.ForceReStart = parameter.ForceReStart;
+            return versionObject;
         }
     }
     [System.Serializable]

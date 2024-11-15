@@ -11,18 +11,22 @@ using UnityEngine;
 
 public class LZXUnHotUpdate : MonoBehaviour
 {
+    private readonly string hotUpdateDllName = "HotUpdate.dll.bytes";
+    private readonly string tempEx = ".temp";
+    private readonly string versionfileName = "Version.json";
+    private readonly string metaDataBundleName = "MetaDataDlls";
     private VersionObject version;
     private LoadingUI loadingUI;
     private async void Start()
     {
-        if (File.Exists(Application.persistentDataPath + "/HotUpdate.dll.bytes.temp"))
+        if (File.Exists(Path.Combine(Application.persistentDataPath , hotUpdateDllName+tempEx)))
         {
             //非第一次进入游戏且进行过热更新
-            if(File.Exists(Application.persistentDataPath + "/HotUpdate.dll.bytes"))
-                File.Delete(Application.persistentDataPath + "/HotUpdate.dll.bytes");
-            File.Move(Application.persistentDataPath + "/HotUpdate.dll.bytes.temp", Application.persistentDataPath + "/HotUpdate.dll.bytes");
+            if(File.Exists(Path.Combine(Application.persistentDataPath ,hotUpdateDllName)))
+                File.Delete(Path.Combine(Application.persistentDataPath ,hotUpdateDllName));
+            File.Move(Path.Combine(Application.persistentDataPath ,hotUpdateDllName+tempEx), Path.Combine(Application.persistentDataPath ,hotUpdateDllName));
         }
-        if (!File.Exists(Application.persistentDataPath + "/version.json"))
+        if (!File.Exists(Path.Combine(Application.persistentDataPath ,versionfileName)))
         {
             await LoadVersion(true);
             loadingUI.UpdateDesc("正在释放资源,此过程不消耗流量");
@@ -36,59 +40,52 @@ public class LZXUnHotUpdate : MonoBehaviour
         }
         LoadDll();
     }
-
-    private void LoadDll()
+    private async void LoadDll()
     {
-        LoadMetadataForAOTAssemblies();//HybirdCLR框架下的补充元数据方法，用于在热更新代码中使用AOT泛型
+        await LoadMetadataForAOTAssemblies();//HybirdCLR框架下的补充元数据方法，用于在热更新代码中使用AOT泛型
                                         // Editor环境下，HotUpdate.dll.bytes已经被自动加载，不需要加载，重复加载反而会出问题。
 #if !UNITY_EDITOR
         //非编辑器下加载程序集
-        Assembly hotUpdateAss = Assembly.Load(File.ReadAllBytes(Path.Combine(Application.persistentDataPath,"HotUpdate.dll.bytes")));
+        Assembly hotUpdateAss = Assembly.Load(File.ReadAllBytes(Path.Combine(Application.persistentDataPath,hotUpdateDllName)));
 #else
-        Assembly hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "HotUpdate");
+        var asss = System.AppDomain.CurrentDomain.GetAssemblies();
+        Assembly hotUpdateAss = asss.First(a => a.GetName().Name == "HotUpdate");
 #endif
         GameObject.Destroy(loadingUI.gameObject);
-        Type type = hotUpdateAss.GetType("Hello");
+        Type type = hotUpdateAss.GetType("LZX.HotUpdate.Hello");
         type.GetMethod("Run").Invoke(null, null);
     }
-    private async void LoadMetadataForAOTAssemblies()
+    private async UniTask LoadMetadataForAOTAssemblies()
     {
-        List<string> files = new List<string>();
-#if UNITY_ANDROID
-        try
+        loadingUI.UpdateDesc("正在加载程序集文件");
+        string url = Path.Combine(Application.persistentDataPath,version.version ,metaDataBundleName+version.BundleEx);
+        AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(url);
+        await req;
+        AssetBundle bundle = req.assetBundle;
+        var assets = version.Bundles.FirstOrDefault(b => b.Name == metaDataBundleName).Assets;
+        if (assets == null)
+            throw new Exception("没有找到MetaDataDlls资源");
+        int count = 0;
+        loadingUI.InitDownLoad(assets.Length);
+        foreach (var aotDllName in assets)
         {
-            using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-            {
-                using (AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
-                {
-                    using (AndroidJavaObject assets = activity.Call<AndroidJavaObject>("getAssets"))
-                    {
-                        // 列出 StreamingAssets 目录下的所有文件
-                        string[] fileNames = assets.Call<string[]>("list", "AssembliesPostIl2CppStrip"); // "" 表示根目录
-                        files.AddRange(fileNames);
-                    }
-                }
-            }
+            count++;
+            var asset = bundle.LoadAssetAsync(aotDllName.LoadPath);
+            loadingUI.UpdateProgress($"加载{Path.GetFileName(aotDllName.LoadPath)}元数据:{count}/{assets.Length}",count);
+            await asset;
+            TextAsset textAsset = asset.asset as TextAsset;
+            if (textAsset == null)
+                throw new Exception($"资源{aotDllName}不是TextAsset");
+            int err = (int)RuntimeApi.LoadMetadataForAOTAssembly(textAsset.bytes, HomologousImageMode.SuperSet);//补充元数据方法
         }
-        catch (System.Exception e)
-        {
-            Debug.LogError("Failed to get files from StreamingAssets: " + e.Message);
-        }
-#else
-        files.AddRange(Directory.GetFiles(Application.streamingAssetsPath, "AssembliesPostIl2CppStrip", SearchOption.AllDirectories));
-#endif
-        foreach (var aotDllName in files)
-        {
-            byte[] dllBytes = await LZXDownLoad.GetFileBytes(aotDllName);
-            int err = (int)RuntimeApi.LoadMetadataForAOTAssembly(dllBytes, HomologousImageMode.SuperSet);//补充元数据方法
-        }
+        bundle.Unload(false);
     }
     private async UniTask LoadVersion(bool IsFirstIn)
     {
         if (IsFirstIn)
         {
             LZXDownLoad.DownFileInfo versionFile = new LZXDownLoad.DownFileInfo();
-            versionFile.url = Path.Combine(Application.streamingAssetsPath, "version.json");
+            versionFile.url = Path.Combine(Application.streamingAssetsPath, versionfileName);
             await LZXDownLoad.DownLoadFileAsync(versionFile, 0);
             version = ScriptableObject.CreateInstance<VersionObject>();
             JsonUtility.FromJsonOverwrite(versionFile.fileData.text, version);
@@ -97,42 +94,42 @@ public class LZXUnHotUpdate : MonoBehaviour
         {
             version = ScriptableObject.CreateInstance<VersionObject>();
             JsonUtility.FromJsonOverwrite(
-                File.ReadAllText(Path.Combine(Application.persistentDataPath, "version.json"))
+                File.ReadAllText(Path.Combine(Application.persistentDataPath,versionfileName))
                 , version);
         }
         await Loadloading();
     }
-
     private async Task Loadloading()
     {
-        var loading = version.LoadingBundleName;
+        var loading = version.LoadingBundleName+version.BundleEx;
         LZXDownLoad.DownFileInfo loadingFile = new LZXDownLoad.DownFileInfo();
         loadingFile.url = Path.Combine(Application.streamingAssetsPath, loading);
         await LZXDownLoad.DownLoadFileAsync(loadingFile, 0);
         var bundle = AssetBundle.LoadFromMemory(loadingFile.fileData.data);
         var ui = bundle.LoadAsset(version.LoadingUIPath);
-        GameObject.Instantiate(ui);
+        GameObject loadingGo = (GameObject)GameObject.Instantiate(ui);
         //AddComponent
         var type = Assembly.GetAssembly(typeof(LoadingUI))
             .GetTypes()
             .Where(type => type.IsSubclassOf(typeof(LoadingUI)) && !type.IsAbstract)
             .ToList();
         if(type.Count > 0 && type.Count == 1)
-            loadingUI = gameObject.AddComponent(type[0]) as LoadingUI;
+            loadingUI = loadingGo.AddComponent(type[0]) as LoadingUI;
         else
             throw new Exception("必须有且仅有一个类继承自LoadingUI");
         bundle.Unload(false);
     }
-
     private async UniTask ReleaseResources()
     {
-        int count = 0;
+        int count = 1;
+        loadingUI.InitDownLoad(version.Bundles.Length+1);
+        await ReleaseHotUpdateDll();
         foreach (var bundle in version.Bundles)
         {
             count++;
             LZXDownLoad.DownFileInfo bundleFile = new LZXDownLoad.DownFileInfo();
             bundleFile.url = Path.Combine(Application.streamingAssetsPath, bundle.Name+version.BundleEx);
-            loadingUI.UpdateProgress($"数量:{count}/{version.Bundles.Length}");
+            loadingUI.UpdateProgress($"数量:{count}/{version.Bundles.Length}",count);
             while (true)//循环重试，直到成功下载
             {
                 try
@@ -148,7 +145,7 @@ public class LZXUnHotUpdate : MonoBehaviour
                 catch (Exception e)
                 {
                     var retryCompletionSource = new UniTaskCompletionSource();
-                    loadingUI.UpdateDesc($"下载文件{bundle.Name+version.BundleEx}失败\r\n,错误信息:{e.Message}");
+                    loadingUI.UpdateDesc($"释放文件{bundle.Name+version.BundleEx}失败\r\n,错误信息:{e.Message}");
                     loadingUI.ShowRetryButton(async () =>
                     {
                         retryCompletionSource.TrySetResult();
@@ -158,6 +155,31 @@ public class LZXUnHotUpdate : MonoBehaviour
             }
         }
         loadingUI.UpdateDesc("资源释放完毕");
-        await File.WriteAllTextAsync(Path.Combine(Application.persistentDataPath, "version.json"), JsonUtility.ToJson(version));
+        await File.WriteAllTextAsync(Path.Combine(Application.persistentDataPath,versionfileName), JsonUtility.ToJson(version));
+    }
+    private async Task ReleaseHotUpdateDll()
+    {
+        LZXDownLoad.DownFileInfo dll = new LZXDownLoad.DownFileInfo();
+        dll.url = Path.Combine(Application.streamingAssetsPath,hotUpdateDllName);
+        loadingUI.UpdateProgress($"数量:{1}/{version.Bundles.Length}",1);
+        while (true)
+        {
+            try
+            {
+                await LZXDownLoad.DownLoadFileAsync(dll);
+                await LZXDownLoad.WriteFile(Path.Combine(Application.persistentDataPath,hotUpdateDllName), dll.fileData.data);
+                break;
+            }
+            catch (Exception e)
+            {
+                var retryCompletionSource = new UniTaskCompletionSource();
+                loadingUI.UpdateDesc($"释放热更新程序集失败\r\n,错误信息:{e.Message}");
+                loadingUI.ShowRetryButton(async () =>
+                {
+                    retryCompletionSource.TrySetResult();
+                });
+                await retryCompletionSource.Task;
+            }
+        }
     }
 }

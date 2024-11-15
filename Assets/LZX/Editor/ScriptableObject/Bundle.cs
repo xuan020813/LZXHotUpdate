@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using LZX.MEditor.Enum;
+using LZX.MEditor.Window;
 using UnityEditor;
 using UnityEngine;
 namespace LZX.MEditor.MScriptableObject
@@ -27,6 +28,20 @@ namespace LZX.MEditor.MScriptableObject
                 paths.Add(path);
             }
             return paths.ToArray();
+        }
+        public void OnDragAsset(List<string> assetNames)
+        {
+            foreach (var asset in assetNames)
+            {
+                string guid = AssetDatabase.AssetPathToGUID(asset);
+                if (AssetGUIDs.Contains(guid))
+                {
+                    var window = EditorWindow.GetWindow<LeftRootWindow>();
+                    if(!window.TempRepeatedAssets.ContainsKey(asset))
+                        window.TempRepeatedAssets.Add(asset, new List<string>());
+                    window.TempRepeatedAssets[asset].Add(Name);
+                }
+            }
         }
     }
 }

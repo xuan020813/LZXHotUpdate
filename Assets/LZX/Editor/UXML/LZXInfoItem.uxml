@@ -5,11 +5,14 @@
     xmlns:editor="UnityEditor.UIElements"
     xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
     <engine:VisualElement class="InfoItem">
-            <engine:VisualElement class="BG box" name="BG"/>
+        <engine:VisualElement class="BG box" name="BG">
+            <engine:Label class="label_idx" name="label_idx"/>
+            <engine:Toggle class="toggle OnHide" name="toggle_select"/>
+        </engine:VisualElement>
             <engine:Label class="Name box" label="newgroup" name="label_name"/>
-            <engine:VisualElement class="BG box OnHide" name="Warning"/>
-            <engine:Button class="btn_box" name="btn_build"/>
-            <engine:Button class="btn_box" name="btn_remove"/>
-            <engine:Button class="btn_box" name="btn_expansion"/>
+            <engine:VisualElement class="BG box OnHide" name="warning"/>
+            <engine:Button class="btn_box" name="btn_1"/>
+            <engine:Button class="btn_box" name="btn_2"/>
+            <engine:Button class="btn_box" name="btn_3"/>
     </engine:VisualElement>
 </engine:UXML>

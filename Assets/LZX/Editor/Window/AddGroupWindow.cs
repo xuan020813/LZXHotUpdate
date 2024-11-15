@@ -16,15 +16,13 @@ namespace LZX.MEditor.Window
         public StyleSheet uss;
         public TextField Name;
         public Toggle Win;
-        public Toggle Switch;
         public Toggle IOS;
         public Toggle Android;
         public VisualElement Group;
         public BundleGroup group;
         public VisualElement root;
-        
-        public Action RefreshBundle;
-        public Action OnYesButtonClick;
+
+        public Action<Bundle> OnCreateCompleted;
         public bool IsCreate = false;
         private void CreateGUI()
         {
@@ -33,7 +31,6 @@ namespace LZX.MEditor.Window
             root.styleSheets.Add(uss);
             Name = root.Q<TextField>("txf_name");
             Win = root.Q<Toggle>("tgl_win");
-            Switch = root.Q<Toggle>("tgl_mac");
             IOS = root.Q<Toggle>("tgl_ios");
             Android = root.Q<Toggle>("tgl_android");
             Group = root.Q<VisualElement>("dpdn_group");
@@ -44,7 +41,7 @@ namespace LZX.MEditor.Window
             Button btn = new Button() { text = "确定" };
             btn.clicked += () =>
             {
-                OnYesButtonClick?.Invoke();
+                OnYseButtonClick();
             };
             btn.style.position = Position.Absolute;
             btn.style.bottom = 0; // 定位到底部
@@ -56,6 +53,41 @@ namespace LZX.MEditor.Window
             btn.style.marginBottom = 0;
             this.rootVisualElement.Add(btn);
             #endregion
+        }
+        private void OnYseButtonClick()
+        {
+            if (!Directory.Exists(Path.Combine(Application.dataPath, "LZX/Bundles")))
+                throw new Exception("Installer LZX FIRST!!!");
+            Bundle bundle = ScriptableObject.CreateInstance<Bundle>();
+            bundle.Name = Name.value;
+            if (Win.value)
+                bundle.Platform.Add(BuildTarget.StandaloneWindows64);
+            if (IOS.value)
+                bundle.Platform.Add(BuildTarget.iOS);
+            if (Android.value)
+                bundle.Platform.Add(BuildTarget.Android);
+            bundle.CreateDate = DateTime.Now.ToString();
+            bundle.IsBuild = "FALSE";
+            foreach (var item in Group.Children())
+            {
+                if (item is ScrollView)
+                {
+                    foreach (var toggle in item.Children())
+                    {
+                        if (toggle is Toggle { value: true } t)
+                            bundle.Group.Add(t.text);
+                    }
+                }
+
+            }
+            AssetDatabase.CreateAsset(bundle, "Assets/LZX/Bundles/" + bundle.Name + ".asset");
+            bundle.GUID = AssetDatabase.AssetPathToGUID("Assets/LZX/Bundles/" + bundle.Name + ".asset");
+            var version = LZXEditorResources.GetVersionController();
+            version.Add(bundle.GUID,bundle);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            OnCreateCompleted?.Invoke(bundle);
+            Close();
         }
         private void CreateGroup()
         {

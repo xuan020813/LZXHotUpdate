@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace LZX.MScriptableObject
 {
@@ -10,10 +12,10 @@ namespace LZX.MScriptableObject
         public string BundleEx; 
         public string LoadingUIPath;
         public string LoadingBundleName;
-        public bool ForeceReplay;
+        public bool ForceReStart;
         public string HotUpdateDllMD5;
         public string LoadingMD5;
         public LZX.MScriptableObject.Bundle[] Bundles;
-        public string[] MetaDataDlls;
+        
     }
 }

@@ -8,7 +8,7 @@ namespace LZX.MScriptableObject
     public abstract class LoadingUI:MonoBehaviour
     {
         public abstract void UpdateDesc(string desc);
-        public abstract void UpdateProgress(string desc);
+        public abstract void UpdateProgress(string desc,int count);
         public abstract void RefreshUI();
         public abstract void ShowRetryButton(Action retryAction);
         public abstract void ShowRetryButton(Action<object[]> retryAction);

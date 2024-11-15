@@ -10,11 +10,10 @@
         <engine:Toggle name="togl_win" text="Win" />
         <engine:Toggle name="togl_ios" text="iOS" />
         <engine:Toggle name="togl_android" text="Android" />
-        <engine:Toggle name="togl_switch" text="Switch" />
         <engine:Toggle name="togl_followbundle" text="Follow Bundle" />
     </engine:VisualElement>
     <engine:TextField name="txt_output" label="Output Path" />
-    <engine:TextField name="txt_loadinguiname" label="LoadingUI Name" />
+    <engine:TextField name="txt_loadinguiname" label="LoadingUI Path" />
     <engine:Toggle name="togl_clearfloder" text="Clear Floder" />
     <engine:Toggle name="togl_copytostreamingassets" text="Copy to StreamingAssets" />
     <engine:DropdownField name="dropdown_compression" label="Compression" choices="None(LZMA),ChunkBased(LZ4),UnCompressed"/>

@@ -3,13 +3,13 @@
     height: 25px;
     flex-direction: row;
 }
-Label{
+.label{
     font-size: 16px;
     width: 30%;
     height: 100%;
     -unity-text-align: middle-right;
 }
-TextField{
+.textfield{
     flex: 1;
     font-size: 16px;
     height: 100%;
@@ -40,4 +40,7 @@ Toggle{
 }
 #labe_options{
     -unity-text-align: upper-right;
+}
+#excontent{
+    margin-bottom: 10px;
 }

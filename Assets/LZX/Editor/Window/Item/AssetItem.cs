@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using LZX.MEditor.LZXStatic;
 using LZX.MEditor.MScriptableObject;
 using UnityEditor;
@@ -12,34 +13,33 @@ namespace LZX.MEditor.Window.Item
         public Label Name;
         public bool IsName = true;
         public Asset Asset;
-        public VisualElement Root;
         private VisualElement BG;
-        public AssetItem(Asset asset,VisualElement root)
+        public AssetItem(Asset asset,VisualElement scv)
         {
             Name = root.Q<Label>("label_name");
             Name.text = asset.Name;
-            var btn_delete = root.Q<Button>("btn_expansion");
+            var btn_delete = root.Q<Button>("btn_3");
             btn_delete.clicked += () => { OnDeleteClick();};
             btn_delete.style.backgroundImage = LZXEditorResources.GetIcon(LZXIconType.delete);
-            var btn_trans = root.Q<Button>("btn_remove");
+            var btn_trans = root.Q<Button>("btn_2");
             btn_trans.clicked += () => { OnTransClick(); };
             btn_trans.style.backgroundImage = LZXEditorResources.GetIcon(LZXIconType.trans);
             BG = root.Q<VisualElement>("BG");
-            Root = root;
             Asset = asset;
             var label_name = root.Q<Label>("label_name");
             label_name.RegisterCallback<ClickEvent>(OnClick);
             ParseBG();
+            scv.Add(root);
         }
         private void OnClick(ClickEvent evt)
         {
-            BundleInfoWindow window = EditorWindow.GetWindow<BundleInfoWindow>();
-            window.RefreshLabel(Asset);
-            //TODO:高亮资产
+            InfoWindow info = EditorWindow.GetWindow<InfoWindow>();
+            info.Init(Asset);
         }
         private void OnDeleteClick()
         {
-            throw new System.NotImplementedException();
+            var window = EditorWindow.GetWindow<RightRootWindow>();
+            window.DeleteAsset(this);
         }
         private void OnTransClick()
         {
@@ -52,6 +52,10 @@ namespace LZX.MEditor.Window.Item
                 Name.text = Asset.Name;
             }
             IsName =!IsName;
+        }
+        public void OnSearchChanged(string context)
+        {
+            root.style.display = Asset.LoadPath.ContainsInvariantCultureIgnoreCase(context) ? DisplayStyle.Flex : DisplayStyle.None;
         }
         private void ParseBG()
         {
