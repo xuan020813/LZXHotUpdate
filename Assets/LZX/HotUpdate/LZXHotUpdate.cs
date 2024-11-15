@@ -6,11 +6,13 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using LZX.MScriptableObject;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace LZX.HotUpdate
 {
-    public class LZXHotUpdate:MonoBehaviour
+    public class LZXHotUpdate
     {
         private readonly string versionfileName = "Version.json";
         private readonly string downfileListName = "downfilelist.json";
@@ -20,7 +22,7 @@ namespace LZX.HotUpdate
         private LoadingUI loadingUI;
         private VersionObject version;
         private VersionObject server_version;
-        private async void Start()
+        public async UniTask StartCheckUpdate()
         {
             version = ScriptableObject.CreateInstance<VersionObject>();
             string json = File.ReadAllText(Path.Combine(Application.persistentDataPath, versionfileName));
@@ -29,16 +31,23 @@ namespace LZX.HotUpdate
             loadingUI.UpdateDesc("正在检查更新...");
             await GetServerVersionObj();
             if(server_version.version != version.version)
-                CheckUpdate();
+                await CheckUpdate();
             else
                 loadingUI.UpdateDesc("无需更新，进入游戏...");
-            EnterGame();
         }
-        private void EnterGame()
+        private async UniTask EnterGame()
         {
             //TODO:进入游戏
+            loadingUI.UpdateDesc("进入游戏...");
+            LZXResources.ParseVersionObject(version);
+            // var scene = await LZXResources.LoadAssetAsync<SceneAsset>("testscene");
+            // var asyncOperation = SceneManager.LoadSceneAsync(scene.name, LoadSceneMode.Single);
+            // asyncOperation.allowSceneActivation = true;
+            var ass = await LZXResources.LoadDllAsync("DemoAssembly");
+            var type = ass.GetType("Test");
+            type.GetMethod("Start").Invoke(null, null);
         }
-        private async void CheckUpdate()
+        private async UniTask CheckUpdate()
         {
             LZXDownLoad.DownFileList fileList = null;
             if (CheckBreakPoint())
@@ -58,21 +67,33 @@ namespace LZX.HotUpdate
                 foreach (var bundle in server_version.Bundles)
                 {
                     LZXDownLoad.DownFileInfo fileInfo = new LZXDownLoad.DownFileInfo();
-                    if (!File.Exists(Path.Combine(Application.persistentDataPath, version.version, bundle.Name+version.BundleEx)))
+                    string bundlePath = "";
+                    string bundleUrl = "";
+                    if (bundle.Name.EndsWith(".bytes"))
+                    {
+                        bundlePath = Path.Combine(server_version.ResourcesURL, version.version, bundle.Name);
+                        bundleUrl = Path.Combine(server_version.ResourcesURL, bundle.Name);
+                    }
+                    else
+                    {
+                        bundlePath = Path.Combine(Application.persistentDataPath, version.version,
+                            bundle.Name + version.BundleEx);
+                        bundleUrl = Path.Combine(server_version.ResourcesURL, bundle.Name+server_version.BundleEx);
+                    }
+                    if (!File.Exists(bundlePath))
                     {
                         fileInfo.fileName = bundle.Name;
-                        fileInfo.url = Path.Combine(server_version.ResourcesURL, bundle.Name+server_version.BundleEx);
+                        fileInfo.url = bundleUrl;
                         fileInfos.Add(fileInfo);
                     }
                     else
                     {
-                        string md5 = LZXDownLoad.GetMD5(Path.Combine(Application.persistentDataPath, version.version,
-                            bundle.Name+version.BundleEx));
+                        string md5 = LZXDownLoad.GetMD5(bundlePath);
                         loadingUI.UpdateDesc($"比对MD5:[{md5}]:[{bundle.MD5}]");
                         if (md5 != bundle.MD5)
                         {
                             fileInfo.fileName = bundle.Name;
-                            fileInfo.url = Path.Combine(server_version.ResourcesURL, bundle.Name+server_version.BundleEx);
+                            fileInfo.url = bundleUrl;
                             fileInfos.Add(fileInfo);
                         }
                     }
@@ -103,7 +124,13 @@ namespace LZX.HotUpdate
             loadingUI.InitDownLoad(fileList.fileList.Count);
             foreach (var fileInfo in fileList.fileList)
             {
-                if (File.Exists(Path.Combine(Application.persistentDataPath, tempDir, fileInfo.fileName+server_version.BundleEx)))
+                string filePath = "";
+                if (!fileInfo.fileName.EndsWith(".bytes"))
+                    filePath = Path.Combine(Application.persistentDataPath, tempDir,
+                        fileInfo.fileName + server_version.BundleEx);
+                else
+                    filePath = Path.Combine(Application.persistentDataPath, tempDir, fileInfo.fileName);
+                if (File.Exists(filePath))
                 {
                     count++;
                     loadingUI.UpdateProgress($"下载文件:{fileInfo.fileName},数量：{count}",count);
@@ -111,9 +138,7 @@ namespace LZX.HotUpdate
                 else
                 {
                     await LZXDownLoad.DownLoadFileAsync(fileInfo);
-                    await LZXDownLoad.WriteFile(
-                        Path.Combine(Application.persistentDataPath, tempDir, fileInfo.fileName+server_version.BundleEx),
-                        fileInfo.fileData.data);
+                    await LZXDownLoad.WriteFile(filePath, fileInfo.fileData.data);
                     count++;
                     loadingUI.UpdateProgress($"下载文件:{fileInfo.fileName},数量：{count}",count);
                 }
@@ -126,7 +151,7 @@ namespace LZX.HotUpdate
                 JsonUtility.ToJson(server_version));
             await CheckDll();
         }
-        private async Task CheckDll()
+        private async UniTask CheckDll()
         {
             if (server_version.HotUpdateDllMD5 != version.HotUpdateDllMD5)
             {
@@ -137,11 +162,11 @@ namespace LZX.HotUpdate
                     hotupdatedll.fileData.data);
                 if (server_version.ForceReStart)
                 {
-#if UNITY_EDITOR
+#if !UNITY_EDITOR
+                    Debug.LogError("下载完成，重启客户端");
                     UnityEditor.EditorApplication.isPlaying = false;
 #else
-                //TODO:退出前给个提示
-                    Application.Quit();
+                    loadingUI.ShowRetryButton("下载完成，请重启客户端","重启",Application.Quit);
 #endif
                 }
             }
@@ -163,7 +188,7 @@ namespace LZX.HotUpdate
                 await AssetBundle.LoadFromFileAsync(
                     Path.Combine(Application.persistentDataPath,version.version ,version.LoadingBundleName+version.BundleEx));
             var go = bundle.LoadAsset<GameObject>(version.LoadingUIPath);
-            var loadinggo = Instantiate(go);
+            var loadinggo = GameObject.Instantiate(go);
             bundle.Unload(false);
             var type = Assembly.GetAssembly(typeof(LoadingUI))
                 .GetTypes()

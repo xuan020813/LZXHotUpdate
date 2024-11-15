@@ -94,6 +94,7 @@ namespace LZX.MEditor.LZXStatic
             var versionObject = versionController.GeneratorVersionObject(parameter);
             var bundles = versionController.Bundles.Values.ToList();
             bundles.Add(LZXDllController.GetMetaDataBundle(parameter.Target));
+            bundles.AddRange(LZXDllController.GetHotUpdateButNonHotUpdateLogicDlls(parameter.Target));
             versionObject.Bundles = LZXEditorResources.EditorBundle2RunTimeBundle(bundles, parameter.OutputPath);
             string json = JsonUtility.ToJson(versionObject);
             string path = Path.Combine(parameter.OutputPath, "Version.json");

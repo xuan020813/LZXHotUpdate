@@ -1,13 +1,14 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace LZX.HotUpdate
 {
     public static class Hello
     {
-        public static void Run()
+        public static async UniTask Run()
         {
-            GameObject go = new GameObject("HotUpdate");
-            go.AddComponent<LZXHotUpdate>();
+            LZXHotUpdate lzx = new LZXHotUpdate();
+            await lzx.StartCheckUpdate();
         }
     }
 }

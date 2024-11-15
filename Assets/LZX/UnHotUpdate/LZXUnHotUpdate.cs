@@ -9,7 +9,7 @@ using HybridCLR;
 using LZX.MScriptableObject;
 using UnityEngine;
 
-public class LZXUnHotUpdate : MonoBehaviour
+public class LZXUnHotUpdate
 {
     private readonly string hotUpdateDllName = "HotUpdate.dll.bytes";
     private readonly string tempEx = ".temp";
@@ -17,7 +17,7 @@ public class LZXUnHotUpdate : MonoBehaviour
     private readonly string metaDataBundleName = "MetaDataDlls";
     private VersionObject version;
     private LoadingUI loadingUI;
-    private async void Start()
+    public async UniTask UseVersionController()
     {
         if (File.Exists(Path.Combine(Application.persistentDataPath , hotUpdateDllName+tempEx)))
         {
@@ -38,9 +38,9 @@ public class LZXUnHotUpdate : MonoBehaviour
             await LoadVersion(false);
             loadingUI.UpdateDesc("正在加载程序集");
         }
-        LoadDll();
+        await LoadDll();
     }
-    private async void LoadDll()
+    private async UniTask LoadDll()
     {
         await LoadMetadataForAOTAssemblies();//HybirdCLR框架下的补充元数据方法，用于在热更新代码中使用AOT泛型
                                         // Editor环境下，HotUpdate.dll.bytes已经被自动加载，不需要加载，重复加载反而会出问题。
@@ -48,12 +48,15 @@ public class LZXUnHotUpdate : MonoBehaviour
         //非编辑器下加载程序集
         Assembly hotUpdateAss = Assembly.Load(File.ReadAllBytes(Path.Combine(Application.persistentDataPath,hotUpdateDllName)));
 #else
-        var asss = System.AppDomain.CurrentDomain.GetAssemblies();
-        Assembly hotUpdateAss = asss.First(a => a.GetName().Name == "HotUpdate");
+        Assembly hotUpdateAss = System.AppDomain.CurrentDomain.
+            GetAssemblies().
+            First(a => a.GetName().Name == Path.GetFileNameWithoutExtension(hotUpdateDllName));
 #endif
         GameObject.Destroy(loadingUI.gameObject);
         Type type = hotUpdateAss.GetType("LZX.HotUpdate.Hello");
-        type.GetMethod("Run").Invoke(null, null);
+        var mathod = type.GetMethod("Run");
+        UniTask task = (UniTask)mathod.Invoke(null, null);
+        await task;
     }
     private async UniTask LoadMetadataForAOTAssemblies()
     {
@@ -145,8 +148,7 @@ public class LZXUnHotUpdate : MonoBehaviour
                 catch (Exception e)
                 {
                     var retryCompletionSource = new UniTaskCompletionSource();
-                    loadingUI.UpdateDesc($"释放文件{bundle.Name+version.BundleEx}失败\r\n,错误信息:{e.Message}");
-                    loadingUI.ShowRetryButton(async () =>
+                    loadingUI.ShowRetryButton($"释放文件{bundle.Name+version.BundleEx}失败\\r\\n,错误信息:{e.Message}","重试",async () =>
                     {
                         retryCompletionSource.TrySetResult();
                     });
@@ -173,8 +175,7 @@ public class LZXUnHotUpdate : MonoBehaviour
             catch (Exception e)
             {
                 var retryCompletionSource = new UniTaskCompletionSource();
-                loadingUI.UpdateDesc($"释放热更新程序集失败\r\n,错误信息:{e.Message}");
-                loadingUI.ShowRetryButton(async () =>
+                loadingUI.ShowRetryButton($"释放热更新程序集失败\r\n,错误信息:{e.Message}","重试",async () =>
                 {
                     retryCompletionSource.TrySetResult();
                 });

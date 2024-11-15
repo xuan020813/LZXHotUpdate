@@ -12,6 +12,7 @@ public class DemoLoadingUI : LoadingUI
     public Slider progressBar;
     public GameObject errorUI;
     public Button retryBtn;
+    public Text errorText;
     public float allfileCount;
 
     private void Awake()
@@ -22,6 +23,7 @@ public class DemoLoadingUI : LoadingUI
         errorUI = transform.Find("ErrorUI").gameObject;
         errorUI.SetActive(false);
         retryBtn = errorUI.transform.Find("RetryBtn").GetComponent<Button>();
+        errorText = errorUI.transform.Find("ErrorText").GetComponent<Text>();
     }
 
     public override void UpdateDesc(string desc)
@@ -41,9 +43,11 @@ public class DemoLoadingUI : LoadingUI
         errorUI.SetActive(false);
         allfileCount = 0;
     }
-    public override void ShowRetryButton(Action retryAction)
+    public override void ShowRetryButton(string errorMessage,string retryBtnText,Action retryAction)
     {
         errorUI.SetActive(true);
+        errorText.text = errorMessage;
+        retryBtn.GetComponent<Text>().text = retryBtnText;
         retryBtn.onClick.RemoveAllListeners();
         retryBtn.onClick.AddListener(() =>
         {

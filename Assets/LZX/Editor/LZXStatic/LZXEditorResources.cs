@@ -96,7 +96,11 @@ namespace LZX.MEditor.LZXStatic
             List<Bundle> runtimeBundles = new List<Bundle>();
             foreach (var bundle in bundles)
             {
-                string editorBundlePath = Path.Combine(bundleOutPath, bundle.Name + GetSetting().BundleEx);
+                string editorBundlePath = "";
+                if(!bundle.Name.EndsWith(".bytes"))
+                    editorBundlePath = Path.Combine(bundleOutPath, bundle.Name + GetSetting().BundleEx);
+                else
+                    editorBundlePath = Path.Combine(bundleOutPath, bundle.Name);
                 if (!File.Exists(editorBundlePath))
                 {
                     Debug.LogError($"Bundle:{bundle.Name} 尚未构建，已跳过加入资产清单");

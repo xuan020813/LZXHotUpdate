@@ -114,5 +114,34 @@ namespace LZX.MEditor.LZXStatic
                 File.Copy(hydllpath, Path.Combine(parameter.OutputPath, asmdef.name + ".dll.bytes"), true);
             }
         }
+
+        public static Bundle[] GetHotUpdateButNonHotUpdateLogicDlls(BuildTarget target)
+        {
+            string distPath = Path.Combine(Application.dataPath, "LZX/HotUpdateDlls", target.ToString());
+            if (Directory.Exists(distPath))
+                Directory.Delete(distPath, true);
+            Directory.CreateDirectory(distPath);
+            string HyDllPath = Application.dataPath.Replace("Assets",SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target));
+            foreach (var asmdef in LZXEditorResources.GetSetting().asmdefs)
+            {
+                string hydllpath = Path.Combine(HyDllPath, asmdef.name + ".dll");
+                if (!File.Exists(hydllpath))
+                    Debug.LogError($"HotUpdateDll:{hydllpath}不存在");
+                File.Copy(hydllpath, Path.Combine(distPath, asmdef.name + ".dll.bytes"), true);
+            }
+            AssetDatabase.Refresh();
+            List<Bundle> bundles = new List<Bundle>();
+            foreach (var dll in Directory.GetFiles(distPath))
+            {
+                if(!dll.EndsWith(".bytes") || dll.Contains("HotUpdate"))
+                    continue;
+                Bundle bundle = ScriptableObject.CreateInstance<Bundle>();
+                bundle.Name = Path.GetFileName(dll);
+                string assetPath = dll.Replace(Application.dataPath, "Assets");
+                bundle.GUID = AssetDatabase.AssetPathToGUID(assetPath);
+                bundles.Add(bundle);
+            }
+            return bundles.ToArray();
+        }
     }
 }
